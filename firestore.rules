@@ -2,124 +2,123 @@
  * @fileoverview Firestore Security Rules for Smart Parking System.
  *
  * Core Philosophy:
- * This ruleset enforces a strict user-ownership model for user-specific data
- * and restricts access to admin users for parking lot and slot management.
- * Public read access is not granted to any collections.  The rules are designed
- * to prevent unauthorized data access and modification, ensuring data integrity
- * and user privacy.
+ * This ruleset enforces a strict user-ownership model for user-specific data and restricts administrative data modifications to backend processes. Data validation is relaxed for rapid prototyping, focusing on authorization and relational integrity.
  *
  * Data Structure:
- * - /users/{userId}: Stores individual user profiles, accessible only to the
- *   authenticated user or admins (via backend).
- * - /parking_lots/{parkingLotId}: Stores parking lot information, managed by admins.
- * - /parking_lots/{parkingLotId}/slots/{slotId}: Stores parking slot details,
- *   also managed by admins. Includes denormalized lotId for simpler rules.
- * - /bookings/{bookingId}: Stores booking information, accessible only to the
- *   user who created the booking.
- * - /payments/{paymentId}: Stores payment information, only created/managed by
- *   Cloud Functions (not directly by users).
+ * - /users/{userId}: User profiles, accessible only to the authenticated user.
+ * - /parking_lots/{parkingLotId}: Parking lot data, managed by admins (via backend).
+ * - /parking_lots/{parkingLotId}/slots/{slotId}: Parking slots within lots, managed by admins (via backend).
+ * - /bookings/{bookingId}: Booking information, readable by the associated user.
+ * - /payments/{paymentId}: Payment transactions, managed by backend processes.
  *
  * Key Security Decisions:
- * - User data is strictly controlled through ownership checks (isOwner()).
- * - Admin privileges are assumed to be managed through a separate, trusted backend
- *   mechanism (e.g., Cloud Functions) and are not directly reflected in these rules.
- * - Listing of documents is generally restricted to owners, unless stated otherwise.
- * - Data validation is relaxed in this prototype phase, focusing on authorization.
+ * - User listing is implicitly disallowed due to the path-based ownership model.
+ * - Payments collection is designed for backend-only access.
+ * - Data validation is minimal, focusing on authorization and critical relationships.
  *
  * Denormalization for Authorization:
- * - The `/parking_lots/{parkingLotId}/slots/{slotId}` path includes `lotId` inside the Slot
- *   document. This prevents the need for costly `get()` calls to the parent document.
+ * - The 'Slot' entity includes 'lotId' to simplify slot management rules under a parking lot.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Secure user profiles. Only the authenticated user can read/write their own profile.
+     * @description Protects user profile data.
      * @path /users/{userId}
-     * @allow (create) User with ID 'user123' creates their profile.
-     *   request.auth.uid == 'user123' and request.resource.data.id == 'user123'
-     * @allow (get, update, delete) User with ID 'user123' reads, updates, or deletes their profile.
-     *   request.auth.uid == 'user123'
-     * @deny (create) User with ID 'user456' attempts to create a profile for user 'user123'.
-     *   request.auth.uid == 'user456' and request.resource.data.id == 'user123'
-     * @deny (get, update, delete) User with ID 'user456' attempts to read, update, or delete the profile of user 'user123'.
-     *   request.auth.uid == 'user456'
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) - Authenticated user can create their own profile.
+     * @allow (get, update, delete) - Authenticated user can read, update, and delete their own profile.
+     * @deny (create) - If the user ID in the request does not match the authenticated user's ID.
+     * @deny (get, update, delete) - If the user ID in the request does not match the authenticated user's ID.
+     * @principle Enforces document ownership for user profiles.
      */
     match /users/{userId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
       function isOwner(userId) {
         return request.auth.uid == userId;
+      }
+
+      function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
       }
 
       allow get: if isOwner(userId);
-      allow list: if false;
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isOwner(userId) && request.resource.data.id == resource.data.id;
-      allow delete: if isOwner(userId) && resource != null;
+      allow list: if false; // Listing users is not permitted.
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Secure parking lot data. Only admins can create, read, update, or delete parking lots.
+     * @description Manages parking lot data.
      * @path /parking_lots/{parkingLotId}
-     * @allow (get, list) Public read access is enabled for all parking lots.
-     * @deny (create, update, delete) Non-admin users cannot create, update, or delete parking lots.
-     * @principle Restricts write access to authorized admins.
+     * @allow (get, list) - Public read access to parking lot data.
+     * @deny (create, update, delete) - Only backend processes can create, update, or delete parking lots.
+     * @principle Restricts parking lot management to backend.
      */
     match /parking_lots/{parkingLotId} {
-      allow get, list: if true;
-      allow create: if false; // TODO: Add admin check
-      allow update: if false && resource != null; // TODO: Add admin check
-      allow delete: if false && resource != null; // TODO: Add admin check
+      allow get: if true;
+      allow list: if true;
+      allow create: if false; // Parking Lots managed by backend
+      allow update: if false; // Parking Lots managed by backend
+      allow delete: if false; // Parking Lots managed by backend
     }
 
     /**
-     * @description Secure parking slot data within a specific parking lot. Only admins can create, read, update, or delete slots.
+     * @description Manages parking slot data within a parking lot.
      * @path /parking_lots/{parkingLotId}/slots/{slotId}
-     * @allow (get, list) Public read access is enabled for all parking slots.
-     * @deny (create, update, delete) Non-admin users cannot create, update, or delete parking slots.
-     * @principle Restricts write access to authorized admins, enforces lotId consistency.
+     * @allow (get, list) - Public read access to parking slot data.
+     * @deny (create, update, delete) - Only backend processes can create, update, or delete parking slots.
+     * @principle Restricts parking slot management to backend.
      */
     match /parking_lots/{parkingLotId}/slots/{slotId} {
-      allow get, list: if true;
-      allow create: if false; // TODO: Add admin check
-      allow update: if false && resource != null; // TODO: Add admin check
-      allow delete: if false && resource != null; // TODO: Add admin check
+      allow get: if true;
+      allow list: if true;
+      allow create: if false; // Slots managed by backend
+      allow update: if false; // Slots managed by backend
+      allow delete: if false; // Slots managed by backend
     }
 
     /**
-     * @description Secure booking data. Only the user who created the booking can read it.
+     * @description Protects booking data, ensuring users can only access their own bookings.
      * @path /bookings/{bookingId}
-     * @allow (create) User with ID 'user123' creates a booking. request.auth.uid == 'user123' && request.resource.data.userId == 'user123'
-     * @allow (get, list) User with ID 'user123' reads their own bookings. request.auth.uid == 'user123'
-     * @deny (create) User with ID 'user456' attempts to create a booking for user 'user123'.  request.auth.uid == 'user456' && request.resource.data.userId == 'user123'
-     * @deny (get, list) User with ID 'user456' attempts to read the bookings of user 'user123'. request.auth.uid == 'user456'
-     * @principle Enforces document ownership for reads.
+     * @allow (get) - Authenticated user can read their own booking.
+     * @allow (list) - No listing permitted
+     * @deny (create, update, delete) - No user create, update, or delete.  Backend only.
+     * @principle Enforces booking ownership.
      */
     match /bookings/{bookingId} {
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
+        function isSignedIn() {
+          return request.auth != null;
+        }
 
-      allow get: if isOwner(resource.data.userId);
-      allow list: if isOwner(request.auth.uid);
-      allow create: if isOwner(request.auth.uid) && request.resource.data.userId == request.auth.uid;
-      allow update: if isOwner(resource.data.userId) && resource != null; // Allow owner to update (prototype)
-      allow delete: if isOwner(resource.data.userId) && resource != null; // Allow owner to delete (prototype)
+        function isOwner(bookingId) {
+          return request.auth.uid == resource.data.userId;
+        }
+
+        // NOTE: Cannot validate resource.data.userId on a `list` operation.
+        allow get: if isSignedIn() && resource.data.userId == request.auth.uid; // Allow anyone signed in to see the booking, assume backend filtering
+        allow list: if false;
+        allow create: if false; // Bookings managed by backend
+        allow update: if false; // Bookings managed by backend
+        allow delete: if false; // Bookings managed by backend
     }
 
     /**
-     * @description Secure payment data. Only accessible and managed by Cloud Functions.
+     * @description Restricts access to payment data.
      * @path /payments/{paymentId}
-     * @deny (get, list, create, update, delete) Direct user access to payments is prohibited.
-     * @principle Payments are managed server-side.
+     * @deny (all) - Payments are managed by backend processes only.
+     * @principle Restricts payment management to backend.
      */
     match /payments/{paymentId} {
-      allow get: if false; // Managed by backend only
-      allow list: if false;
-      allow create: if false; // Managed by backend only
-      allow update: if false && resource != null; // Managed by backend only
-      allow delete: if false && resource != null; // Managed by backend only
+      allow get: if false; // Payments managed by backend
+      allow list: if false; // Payments managed by backend
+      allow create: if false; // Payments managed by backend
+      allow update: if false; // Payments managed by backend
+      allow delete: if false; // Payments managed by backend
     }
   }
 }
