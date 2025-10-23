@@ -21,6 +21,7 @@
             padding: 40px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 500px;
         }
         h1 {
             color: #333;
@@ -29,6 +30,7 @@
         p {
             color: #666;
             margin-bottom: 30px;
+            line-height: 1.6;
         }
         .button {
             background-color: #007AFF;
@@ -38,18 +40,79 @@
             text-decoration: none;
             font-weight: 500;
             display: inline-block;
+            margin: 10px;
+            border: none;
+            cursor: pointer;
         }
         .button:hover {
             background-color: #0062CC;
+        }
+        .button.secondary {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        .button.secondary:hover {
+            background-color: #e0e0e0;
+        }
+        .instructions {
+            text-align: left;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .instructions ol {
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        .note {
+            background-color: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: left;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>SmartParkr</h1>
-        <p>Your smart parking solution</p>
-        <p>This is a placeholder for the mobile app. The full application will be loaded when deployed.</p>
-        <a href="#" class="button" onclick="alert('SmartParkr Mobile App - Full functionality will be available when deployed to a server')">Get Started</a>
+        <h1>SmartParkr Mobile App</h1>
+        <p>Welcome to the SmartParkr mobile application. This is a placeholder for the mobile app that will connect to your deployed SmartParkr backend.</p>
+        
+        <div class="note">
+            <strong>Note:</strong> This is a placeholder page. For full functionality, you need to deploy the SmartParkr application and configure the API endpoints.
+        </div>
+        
+        <div class="instructions">
+            <h3>Deployment Instructions:</h3>
+            <ol>
+                <li>Deploy the SmartParkr Next.js application to a hosting service (Vercel, Netlify, etc.)</li>
+                <li>Deploy the MongoDB database to a cloud service (MongoDB Atlas, etc.)</li>
+                <li>Update the API endpoints in the Capacitor configuration</li>
+                <li>Build the mobile app with the deployed URLs</li>
+            </ol>
+        </div>
+        
+        <div>
+            <button class="button" onclick="simulateAppLaunch()">Launch App</button>
+            <button class="button secondary" onclick="showMoreInfo()">More Info</button>
+        </div>
     </div>
+
+    <script>
+        function simulateAppLaunch() {
+            alert('SmartParkr Mobile App - In a deployed environment, this would launch the full application with connection to your API endpoints.');
+        }
+        
+        function showMoreInfo() {
+            alert('SmartParkr is a parking management system that allows users to find, book, and manage parking spaces. For the mobile app to work properly, it needs to connect to deployed API endpoints.');
+        }
+    </script>
 </body>
 </html>

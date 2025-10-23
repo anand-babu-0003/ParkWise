@@ -1,11 +1,14 @@
 import type {NextConfig} from 'next';
 
+// Check if we're building for export
+const isExport = process.env.EXPORT_BUILD === 'true';
+
 const nextConfig: NextConfig = {
   /* config options here */
-  output: 'export',
-  distDir: 'out',
-  // Exclude API routes from static export
-  trailingSlash: true,
+  ...(isExport && {
+    output: 'export',
+    distDir: 'out'
+  }),
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -13,7 +16,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
-    unoptimized: true,
+    ...(isExport ? { unoptimized: true } : {}),
     remotePatterns: [
       {
         protocol: 'https',

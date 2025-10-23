@@ -7,14 +7,16 @@
     "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
     "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",
     "build": "next build",
-    "export": "next export",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "capacitor:build": "npm run build && npm run export",
-    "capacitor:sync": "npx cap sync",
+    "export": "node export.js",
+    "capacitor:build": "npm run export && npx cap sync",
+    "capacitor:dev": "npm run export && npx cap copy",
     "capacitor:android": "npx cap add android",
-    "capacitor:ios": "npx cap add ios"
+    "capacitor:ios": "npx cap add ios",
+    "capacitor:open:android": "npx cap open android",
+    "capacitor:open:ios": "npx cap open ios"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.4",
