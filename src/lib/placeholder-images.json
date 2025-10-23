@@ -1,3 +1,34 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "parking-garage-1",
+      "description": "Interior of a modern, well-lit multi-story parking garage.",
+      "imageUrl": "https://images.unsplash.com/photo-1604063165585-e17e9c3c3f0b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxwYXJraW5nJTIwZ2FyYWdlfGVufDB8fHx8MTc2MTE1NTE3M3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "parking garage"
+    },
+    {
+      "id": "parking-garage-2",
+      "description": "Exterior of a concrete parking structure with multiple levels.",
+      "imageUrl": "https://images.unsplash.com/photo-1681024222347-3f4c4bbfcde6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxwYXJraW5nJTIwc3RydWN0dXJlfGVufDB8fHx8MTc2MTE1NTE3M3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "parking structure"
+    },
+    {
+      "id": "parking-lot-1",
+      "description": "An open-air parking lot with cars parked in designated spaces.",
+      "imageUrl": "https://images.unsplash.com/photo-1505426519484-49cb8fef3def?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwYXJraW5nJTIwbG90fGVufDB8fHx8MTc2MTE0NzE0OHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "parking lot"
+    },
+    {
+      "id": "parking-garage-3",
+      "description": "An underground parking garage with bright fluorescent lighting.",
+      "imageUrl": "https://images.unsplash.com/photo-1590674899484-d5640e854abe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx1bmRlcmdyb3VuZCUyMHBhcmtpbmd8ZW58MHx8fHwxNzYxMTk0MDI2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "underground parking"
+    },
+    {
+      "id": "login-background",
+      "description": "Abstract view of a spiral ramp in a parking garage.",
+      "imageUrl": "https://images.unsplash.com/photo-1691260841178-d6ec4231f1d4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwYXJraW5nJTIwcmFtcHxlbnwwfHx8fDE3NjEyMjAwMTZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "parking ramp"
+    }
+  ]
 }
