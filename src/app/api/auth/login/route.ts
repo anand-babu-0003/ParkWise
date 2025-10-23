@@ -8,7 +8,18 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, password } = await req.json();
+    let email, password;
+    
+    try {
+      const body = await req.json();
+      email = body.email;
+      password = body.password;
+    } catch (parseError) {
+      return NextResponse.json(
+        { error: 'Invalid request body. Please provide email and password.' },
+        { status: 400 }
+      );
+    }
     
     if (!email || !password) {
       return NextResponse.json(
@@ -82,8 +93,15 @@ export async function POST(req: NextRequest) {
     return response;
   } catch (error: any) {
     console.error('Login error:', error);
+    
+    // Ensure we always return valid JSON
+    let errorMessage = 'Internal server error';
+    if (error instanceof Error) {
+      errorMessage = error.message || errorMessage;
+    }
+    
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

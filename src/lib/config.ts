@@ -14,10 +14,10 @@ export const AppConfig = {
   NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || 'https://smartparker.space',
   
   // Environment
-  NODE_ENV: process.env.NODE_ENV || 'production',
+  NODE_ENV: process.env.NODE_ENV || 'development',
   
   // Feature Flags
-  IS_PRODUCTION: (process.env.NODE_ENV || 'production') === 'production',
+  IS_PRODUCTION: (process.env.NODE_ENV || 'development') === 'production',
 };
 
 // Type-safe exports
