@@ -1,53 +1,38 @@
+'use client';
 
 import { Header } from '@/components/header';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MapPin, Zap } from 'lucide-react';
+import { MapPin, Zap, ParkingSquare } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import placeholderImages from '@/lib/placeholder-images.json';
 import Link from 'next/link';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
 
-const parkingLots = [
-  {
-    id: '1',
-    name: 'Downtown City Garage',
-    location: '123 Main St, Metropolis',
-    available_slots: 15,
-    total_slots: 150,
-    price_per_hour: 3.5,
-    imageId: 'parking-garage-1'
-  },
-  {
-    id: '2',
-    name: 'Uptown Plaza Parkade',
-    location: '456 Oak Ave, Gotham',
-    available_slots: 42,
-    total_slots: 200,
-    price_per_hour: 2.75,
-    imageId: 'parking-garage-2'
-  },
-  {
-    id: '3',
-    name: 'Riverside Open Lot',
-    location: '789 Pine Ln, Star City',
-    available_slots: 88,
-    total_slots: 100,
-    price_per_hour: 1.5,
-    imageId: 'parking-lot-1'
-  },
-  {
-    id: '4',
-    name: 'Airport Long Term B',
-    location: '101 Airport Rd, Central City',
-    available_slots: 5,
-    total_slots: 300,
-    price_per_hour: 4.0,
-    imageId: 'parking-garage-3'
-  },
-];
+// Define the type for a parking lot based on your Firestore structure
+type ParkingLot = {
+  id: string;
+  name: string;
+  location: string;
+  availableSlots: number;
+  totalSlots: number;
+  pricePerHour: number;
+  imageId: string;
+};
 
 export default function Home() {
+  const firestore = useFirestore();
+
+  const parkingLotsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'parking_lots');
+  }, [firestore]);
+
+  const { data: parkingLots, isLoading } = useCollection<ParkingLot>(parkingLotsQuery);
+
   const getImage = (id: string) => placeholderImages.placeholderImages.find(img => img.id === id);
 
   return (
@@ -69,7 +54,26 @@ export default function Home() {
           <div className="container mx-auto px-4 md:px-6">
             <h2 className="text-3xl font-bold text-center mb-10 font-headline">Available Parking Lots</h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {parkingLots.map((lot) => {
+              {isLoading && Array.from({ length: 4 }).map((_, i) => (
+                <Card key={i} className="flex flex-col">
+                  <Skeleton className="h-48 w-full" />
+                  <CardHeader>
+                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex justify-between">
+                      <Skeleton className="h-6 w-20" />
+                      <Skeleton className="h-6 w-16" />
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Skeleton className="h-10 w-full" />
+                  </CardFooter>
+                </Card>
+              ))}
+
+              {!isLoading && parkingLots && parkingLots.map((lot) => {
                 const img = getImage(lot.imageId);
                 return (
                   <Card key={lot.id} className="flex flex-col overflow-hidden transform hover:-translate-y-1 transition-transform duration-300 shadow-lg hover:shadow-xl">
@@ -86,14 +90,14 @@ export default function Home() {
                       </CardHeader>
                       <CardContent className="flex-grow">
                         <div className="flex justify-between items-center text-sm">
-                          <Badge variant={lot.available_slots > 10 ? 'secondary' : 'destructive'}>
-                            {lot.available_slots > 0 ? `${lot.available_slots} slots available` : 'Full'}
+                          <Badge variant={lot.availableSlots > 10 ? 'secondary' : 'destructive'}>
+                            {lot.availableSlots > 0 ? `${lot.availableSlots} slots available` : 'Full'}
                           </Badge>
-                          <p className="font-semibold text-lg text-foreground">${lot.price_per_hour.toFixed(2)}<span className="text-xs font-normal text-muted-foreground">/hr</span></p>
+                          <p className="font-semibold text-lg text-foreground">${lot.pricePerHour.toFixed(2)}<span className="text-xs font-normal text-muted-foreground">/hr</span></p>
                         </div>
                       </CardContent>
                       <CardFooter>
-                        <Button className="w-full" disabled={lot.available_slots === 0}>
+                        <Button className="w-full" disabled={lot.availableSlots === 0}>
                             <Zap className="w-4 h-4 mr-2" />
                             Book Now
                         </Button>
@@ -102,6 +106,14 @@ export default function Home() {
                   </Card>
                 );
               })}
+
+              {!isLoading && (!parkingLots || parkingLots.length === 0) && (
+                <div className="col-span-full text-center py-20 text-muted-foreground">
+                  <ParkingSquare className="w-16 h-16 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold">No Parking Lots Available</h3>
+                  <p>Check back later for available parking locations.</p>
+                </div>
+              )}
             </div>
           </div>
         </section>
