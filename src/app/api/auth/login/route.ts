@@ -3,6 +3,9 @@ import { connectToDatabase } from '@/lib/db';
 import User from '@/models/User';
 import { generateToken } from '@/lib/auth';
 
+// Add this to make the route compatible with static export
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json();

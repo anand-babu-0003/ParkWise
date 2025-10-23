@@ -3,6 +3,9 @@ import { connectToDatabase } from '@/lib/db';
 import ParkingLot from '@/models/ParkingLot';
 import ParkingLotOwner from '@/models/ParkingLotOwner';
 
+// Add this to make the route compatible with static export
+export const dynamic = 'force-dynamic';
+
 // PUT /api/owner/lots/[id] - Update a specific parking lot
 export async function PUT(
   req: NextRequest,

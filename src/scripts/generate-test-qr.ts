@@ -5,7 +5,7 @@ import { join } from 'path';
 async function generateTestQRCode() {
   try {
     // Generate a test QR code for a sample parking lot
-    const testUrl = 'http://localhost:9002/lot/test-lot-123';
+    const testUrl = 'https://smartparker.space/lot/test-lot-123';
     
     // Generate QR code as data URL
     const qrDataUrl = await QRCode.toDataURL(testUrl, {

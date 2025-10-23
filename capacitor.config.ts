@@ -6,10 +6,8 @@ const config: CapacitorConfig = {
   webDir: 'public',
   server: {
     androidScheme: 'https',
-    // For development, you can point to your local server
-    // url: 'http://localhost:9002',
-    // For production, you would point to your deployed API
-    // url: 'https://your-deployed-api.com'
+    // For production, point to your deployed domain
+    url: 'https://smartparker.space'
   }
 };
 

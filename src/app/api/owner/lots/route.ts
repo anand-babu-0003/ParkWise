@@ -3,14 +3,15 @@ import { connectToDatabase } from '@/lib/db';
 import ParkingLot from '@/models/ParkingLot';
 import ParkingLotOwner from '@/models/ParkingLotOwner';
 
-// GET /api/owner/lots - Get all lots owned by the current user
+// Add this to make the route compatible with static export
+export const dynamic = 'force-dynamic';
+
+// GET /api/owner/lots - Get all parking lots for an owner
 export async function GET(req: NextRequest) {
   try {
-    // In a real implementation, you would get the userId from the auth token
-    // For now, we'll expect it as a query parameter for testing
     const { searchParams } = new URL(req.url);
     const ownerId = searchParams.get('ownerId');
-    
+
     if (!ownerId) {
       return NextResponse.json(
         { error: 'Owner ID is required' },
@@ -20,24 +21,13 @@ export async function GET(req: NextRequest) {
 
     await connectToDatabase();
     
-    // Verify the owner exists
-    const owner = await ParkingLotOwner.findOne({ userId: ownerId });
-    if (!owner) {
-      return NextResponse.json(
-        { error: 'Owner not found' },
-        { status: 404 }
-      );
-    }
-
-    // Get all lots owned by this owner
-    const lots = await ParkingLot.find({ ownerId: ownerId });
+    const parkingLots = await ParkingLot.find({ ownerId });
     
     // Convert to plain objects with id
-    const result = lots.map(lot => ({
+    const result = parkingLots.map(lot => ({
       id: lot._id.toString(),
       name: lot.name,
       location: lot.location,
-      locationCoords: lot.locationCoords,
       availableSlots: lot.availableSlots,
       totalSlots: lot.totalSlots,
       pricePerHour: lot.pricePerHour,
@@ -58,21 +48,21 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/owner/lots - Create a new parking lot for the owner
+// POST /api/owner/lots - Create a new parking lot for an owner
 export async function POST(req: NextRequest) {
   try {
     const { ownerId, lotData } = await req.json();
     
-    if (!ownerId || !lotData) {
+    if (!ownerId) {
       return NextResponse.json(
-        { error: 'Owner ID and lot data are required' },
+        { error: 'Owner ID is required' },
         { status: 400 }
       );
     }
 
     await connectToDatabase();
     
-    // Verify the owner exists
+    // Verify owner exists
     const owner = await ParkingLotOwner.findOne({ userId: ownerId });
     if (!owner) {
       return NextResponse.json(
@@ -80,44 +70,43 @@ export async function POST(req: NextRequest) {
         { status: 404 }
       );
     }
-
-    // Create new parking lot
-    // Ensure locationCoords has the proper structure if provided, or set a default
-    const lotDataWithCoords = {
-      ...lotData,
-      ownerId,
-      locationCoords: lotData.locationCoords || {
+    
+    // If location coordinates are provided, format them correctly
+    const parkingLotData = { ...lotData, ownerId };
+    if (lotData.latitude && lotData.longitude) {
+      parkingLotData.locationCoords = {
         type: 'Point',
-        coordinates: [0, 0] // Default coordinates, should be updated by owner
-      }
-    };
-
-    const newLot = new ParkingLot(lotDataWithCoords);
-
-    const savedLot = await newLot.save();
+        coordinates: [parseFloat(lotData.longitude), parseFloat(lotData.latitude)]
+      };
+      // Remove individual lat/lng fields
+      delete parkingLotData.latitude;
+      delete parkingLotData.longitude;
+    }
+    
+    const newParkingLot = new ParkingLot(parkingLotData);
+    const savedParkingLot = await newParkingLot.save();
     
     // Add lot to owner's lots array
-    owner.lots.push(savedLot._id.toString());
+    owner.lots.push(savedParkingLot._id.toString());
     await owner.save();
-
+    
     const result = {
-      id: savedLot._id.toString(),
-      name: savedLot.name,
-      location: savedLot.location,
-      locationCoords: savedLot.locationCoords,
-      availableSlots: savedLot.availableSlots,
-      totalSlots: savedLot.totalSlots,
-      pricePerHour: savedLot.pricePerHour,
-      imageId: savedLot.imageId,
-      operatingHours: savedLot.operatingHours,
-      ownerId: savedLot.ownerId,
-      createdAt: savedLot.createdAt,
-      updatedAt: savedLot.updatedAt,
+      id: savedParkingLot._id.toString(),
+      name: savedParkingLot.name,
+      location: savedParkingLot.location,
+      availableSlots: savedParkingLot.availableSlots,
+      totalSlots: savedParkingLot.totalSlots,
+      pricePerHour: savedParkingLot.pricePerHour,
+      imageId: savedParkingLot.imageId,
+      operatingHours: savedParkingLot.operatingHours,
+      ownerId: savedParkingLot.ownerId,
+      createdAt: savedParkingLot.createdAt,
+      updatedAt: savedParkingLot.updatedAt,
     };
 
     return NextResponse.json(result, { status: 201 });
   } catch (error: any) {
-    console.error('Create lot error:', error);
+    console.error('Create owner lot error:', error);
     return NextResponse.json(
       { error: error.message || 'Internal server error' },
       { status: 500 }

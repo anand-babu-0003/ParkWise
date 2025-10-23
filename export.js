@@ -2,23 +2,23 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-// Function to run export
-function runExport() {
+// Function to run build
+function runBuild() {
   try {
-    console.log('Building with export configuration...');
+    console.log('Building application...');
     
-    // Set environment variable for export build
-    if (process.platform === 'win32') {
-      execSync('set "EXPORT_BUILD=true" && next build', { stdio: 'inherit', shell: true });
-    } else {
-      execSync('EXPORT_BUILD=true next build', { stdio: 'inherit' });
-    }
+    // Run next build
+    execSync('next build', { stdio: 'inherit' });
     
-    console.log('Export completed successfully!');
+    console.log('Build completed successfully!');
+    console.log('To deploy for mobile:');
+    console.log('1. Deploy to a hosting service like Vercel');
+    console.log('2. Update capacitor.config.ts with the deployed URL');
+    console.log('3. Run: npm run capacitor:build');
   } catch (error) {
-    console.error('Export failed:', error.message);
+    console.error('Build failed:', error.message);
     process.exit(1);
   }
 }
 
-runExport();
+runBuild();

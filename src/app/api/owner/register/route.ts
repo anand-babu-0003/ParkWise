@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db';
 import ParkingLotOwner from '@/models/ParkingLotOwner';
 
+// Add this to make the route compatible with static export
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const { userId, businessName, contactInfo } = await req.json();

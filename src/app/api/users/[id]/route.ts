@@ -2,14 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db';
 import User from '@/models/User';
 
+// Add this to make the route compatible with static export
+export const dynamic = 'force-dynamic';
+
 // GET /api/users/[id] - Get a specific user by ID
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Resolve the params promise
+    const { id } = await params;
+    
     await connectToDatabase();
-    const user = await User.findById(params.id);
+    const user = await User.findById(id);
     
     if (!user) {
       return NextResponse.json(
@@ -39,9 +45,12 @@ export async function GET(
 // PUT /api/users/[id] - Update a specific user by ID
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Resolve the params promise
+    const { id } = await params;
+    
     const body = await req.json();
     
     // Remove password from body if present, as we handle it separately
@@ -49,7 +58,7 @@ export async function PUT(
     
     await connectToDatabase();
     const updatedUser = await User.findByIdAndUpdate(
-      params.id,
+      id,
       updateData,
       { new: true }
     );
@@ -82,11 +91,14 @@ export async function PUT(
 // DELETE /api/users/[id] - Delete a specific user by ID
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Resolve the params promise
+    const { id } = await params;
+    
     await connectToDatabase();
-    const deletedUser = await User.findByIdAndDelete(params.id);
+    const deletedUser = await User.findByIdAndDelete(id);
     
     if (!deletedUser) {
       return NextResponse.json(

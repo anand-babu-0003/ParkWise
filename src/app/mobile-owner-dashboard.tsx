@@ -158,7 +158,7 @@ export default function MobileOwnerDashboard() {
 
   const handleShowQRCode = async (lot: ParkingLot) => {
     try {
-      const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:9002';
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://smartparker.space';
       const lotUrl = `${baseUrl}/lot/${lot.id}`;
       
       const response = await fetch(`/api/qr?data=${encodeURIComponent(lotUrl)}`);

@@ -11,13 +11,13 @@ export const AppConfig = {
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
   
   // API Configuration
-  NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002',
+  NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || 'https://smartparker.space',
   
   // Environment
-  NODE_ENV: process.env.NODE_ENV || 'development',
+  NODE_ENV: process.env.NODE_ENV || 'production',
   
   // Feature Flags
-  IS_PRODUCTION: (process.env.NODE_ENV || 'development') === 'production',
+  IS_PRODUCTION: (process.env.NODE_ENV || 'production') === 'production',
 };
 
 // Type-safe exports

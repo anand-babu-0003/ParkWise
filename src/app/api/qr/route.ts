@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import QRCode from 'qrcode';
 
+// Add this to make the route compatible with static export
+export const dynamic = 'force-dynamic';
+
 // GET /api/qr - Generate QR code as data URL
 export async function GET(req: NextRequest) {
   try {

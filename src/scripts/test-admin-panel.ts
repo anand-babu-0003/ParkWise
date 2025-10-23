@@ -29,7 +29,7 @@ async function testAdminPanel() {
   console.log('\nAdmin Panel Test Complete!');
   console.log('To test the admin panel in browser:');
   console.log('1. Ensure you have an admin user account');
-  console.log('2. Navigate to http://localhost:9002/admin/dashboard');
+  console.log('2. Navigate to https://smartparker.space/admin/dashboard');
   console.log('3. Verify all charts and data are loading correctly');
   console.log('4. Test navigation between different admin sections');
 }
