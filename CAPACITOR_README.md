@@ -9,6 +9,20 @@ The Capacitor configuration has been set up with:
 - Web directory configured to use the `public` folder
 - Basic placeholder HTML file in the `public` directory
 
+## Environment Configuration
+
+Environment variables are now directly embedded in the app through `src/lib/config.ts` for better compatibility with mobile deployments. This approach ensures that configuration values are available even when .env files cannot be accessed in mobile environments.
+
+### Configuration Values
+
+The app now uses the following configuration values:
+- Database connection (MONGO_URI)
+- Authentication secrets (JWT_SECRET)
+- API endpoints (NEXT_PUBLIC_BASE_URL)
+- Environment settings (NODE_ENV)
+
+These values are loaded from environment variables if available, with fallback values directly embedded in the app.
+
 ## Building the APK
 
 ### Prerequisites

@@ -4,12 +4,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MobileLayout } from './mobile-layout';
-import MobileHome from './mobile-home';
 
 export default function Home() {
   const { user, isUserLoading } = useAuth();
   const router = useRouter();
   const [isCheckingSetup, setIsCheckingSetup] = useState(true);
+  const [setupChecked, setSetupChecked] = useState(false);
 
   useEffect(() => {
     const checkSetupStatus = async () => {
@@ -25,39 +25,47 @@ export default function Home() {
         console.error('Setup status check failed:', error);
       } finally {
         setIsCheckingSetup(false);
+        setSetupChecked(true);
       }
     };
 
-    if (!isUserLoading) {
-      if (!user) {
-        // Check if setup is needed
-        checkSetupStatus();
-      } else {
-        // Redirect based on user role
-        switch (user.role) {
-          case 'admin':
-            router.push('/admin/dashboard');
-            break;
-          case 'owner':
-            router.push('/owner/dashboard');
-            break;
-          case 'user':
-            // For regular users, stay on the home page
-            setIsCheckingSetup(false);
-            break;
-          default:
-            setIsCheckingSetup(false);
-        }
-      }
+    if (!setupChecked) {
+      checkSetupStatus();
     }
-  }, [user, isUserLoading, router]);
+  }, [router, setupChecked]);
 
-  // Handle redirect for unauthenticated users
   useEffect(() => {
-    if (!isCheckingSetup && !isUserLoading && !user) {
-      router.push('/login');
+    // Don't do anything until setup check is complete
+    if (isCheckingSetup) {
+      return;
     }
-  }, [isCheckingSetup, isUserLoading, user, router]);
+
+    // Don't do anything while user data is loading
+    if (isUserLoading) {
+      return;
+    }
+
+    // If no user is logged in, redirect to login page
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
+    // If user is logged in, redirect based on their role
+    switch (user.role) {
+      case 'admin':
+        router.push('/admin/dashboard');
+        break;
+      case 'owner':
+        router.push('/owner/dashboard');
+        break;
+      case 'user':
+        router.push('/user');
+        break;
+      default:
+        router.push('/login');
+    }
+  }, [user, isUserLoading, router, isCheckingSetup]);
 
   // Show loading state while checking
   if (isCheckingSetup || isUserLoading) {
@@ -73,11 +81,14 @@ export default function Home() {
     );
   }
 
-  // For authenticated users (especially regular users), show the mobile home page
-  // Admins and owners should have been redirected by now
+  // This should never be reached due to redirects, but just in case
   return (
     <MobileLayout>
-      <MobileHome />
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="mt-4 text-lg">Redirecting...</p>
+        </div>
+      </div>
     </MobileLayout>
   );
 }

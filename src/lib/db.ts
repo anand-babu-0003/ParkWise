@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
+import AppConfig from './config';
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/parkwise';
+const MONGO_URI = AppConfig.MONGO_URI;
 
 if (!MONGO_URI) {
   throw new Error('Please define the MONGO_URI environment variable');

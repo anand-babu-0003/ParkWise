@@ -1,9 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { connectToDatabase } from '@/lib/db';
 import User from '@/models/User';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'parkwise_jwt_secret';
-const JWT_EXPIRES_IN = '7d';
+import { JWT_SECRET, JWT_EXPIRES_IN } from './config';
 
 export interface AuthTokenPayload {
   userId: string;
@@ -12,7 +10,9 @@ export interface AuthTokenPayload {
 }
 
 export const generateToken = (payload: AuthTokenPayload): string => {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  // Convert JWT_EXPIRES_IN to the correct type
+  const expiresIn = JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'];
+  return jwt.sign(payload, JWT_SECRET, { expiresIn });
 };
 
 export const verifyToken = (token: string): AuthTokenPayload => {
