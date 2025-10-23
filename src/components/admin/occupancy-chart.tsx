@@ -1,6 +1,6 @@
 "use client"
 
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from "recharts"
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts"
 
 import {
   ChartConfig,
@@ -9,16 +9,9 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
-const chartData = [
-  { time: "06:00", occupancy: 35 },
-  { time: "08:00", occupancy: 62 },
-  { time: "10:00", occupancy: 78 },
-  { time: "12:00", occupancy: 85 },
-  { time: "14:00", occupancy: 80 },
-  { time: "16:00", occupancy: 70 },
-  { time: "18:00", occupancy: 55 },
-  { time: "20:00", occupancy: 40 },
-]
+interface OccupancyChartProps {
+    data: { name: string; occupancy: number }[];
+}
 
 const chartConfig = {
   occupancy: {
@@ -27,13 +20,21 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-export function OccupancyChart() {
+export function OccupancyChart({ data }: OccupancyChartProps) {
+  if (!data || data.length === 0) {
+     return (
+      <div className="flex flex-col items-center justify-center h-[350px] text-muted-foreground">
+        <p>No occupancy data available.</p>
+      </div>
+    );
+  }
+  
   return (
      <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
         <ResponsiveContainer width="100%" height={350}>
-            <AreaChart
+            <BarChart
             accessibilityLayer
-            data={chartData}
+            data={data}
             margin={{
                 left: 0,
                 right: 20,
@@ -43,11 +44,10 @@ export function OccupancyChart() {
             >
             <CartesianGrid vertical={false} />
             <XAxis
-                dataKey="time"
+                dataKey="name"
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
-                tickFormatter={(value) => value}
                 stroke="hsl(var(--muted-foreground))"
                 fontSize={12}
             />
@@ -62,16 +62,13 @@ export function OccupancyChart() {
                 cursor={false}
                 content={<ChartTooltipContent indicator="dot" />}
             />
-            <Area
+            <Bar
                 dataKey="occupancy"
-                type="natural"
                 fill="var(--color-occupancy)"
-                fillOpacity={0.4}
-                stroke="var(--color-occupancy)"
-                stackId="a"
+                radius={4}
                 unit="%"
             />
-            </AreaChart>
+            </BarChart>
         </ResponsiveContainer>
       </ChartContainer>
   )

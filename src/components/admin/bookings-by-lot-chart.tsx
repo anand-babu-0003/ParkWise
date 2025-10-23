@@ -12,36 +12,67 @@ import {
   ChartLegendContent
 } from "@/components/ui/chart"
 
-const chartData = [
-  { lot: "Downtown", bookings: 275, fill: "var(--color-downtown)" },
-  { lot: "Uptown", bookings: 200, fill: "var(--color-uptown)" },
-  { lot: "Riverside", bookings: 187, fill: "var(--color-riverside)" },
-  { lot: "Airport", bookings: 173, fill: "var(--color-airport)" },
-]
+type Booking = {
+  lotId: string;
+};
 
-const chartConfig = {
-  bookings: {
-    label: "Bookings",
-  },
-  downtown: {
-    label: "Downtown",
-    color: "hsl(var(--chart-1))",
-  },
-  uptown: {
-    label: "Uptown",
-    color: "hsl(var(--chart-2))",
-  },
-  riverside: {
-    label: "Riverside",
-    color: "hsl(var(--chart-3))",
-  },
-  airport: {
-    label: "Airport",
-    color: "hsl(var(--chart-4))",
-  },
-} satisfies ChartConfig
+type ParkingLot = {
+  id: string;
+  name: string;
+};
 
-export function BookingsByLotChart() {
+interface BookingsByLotChartProps {
+  bookings: Booking[];
+  lots: ParkingLot[];
+}
+
+const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
+
+export function BookingsByLotChart({ bookings, lots }: BookingsByLotChartProps) {
+  const bookingsByLot = React.useMemo(() => {
+    const lotMap = new Map(lots.map(lot => [lot.id, lot.name]));
+    const counts = bookings.reduce((acc, booking) => {
+      const lotName = lotMap.get(booking.lotId) || 'Unknown Lot';
+      acc[lotName] = (acc[lotName] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(counts).map(([lotName, count]) => ({
+      lot: lotName,
+      bookings: count,
+    }));
+  }, [bookings, lots]);
+
+  const chartData = React.useMemo(() => {
+    return bookingsByLot.map((item, index) => ({
+      ...item,
+      fill: COLORS[index % COLORS.length]
+    }));
+  }, [bookingsByLot]);
+
+  const chartConfig = React.useMemo(() => {
+    const config: ChartConfig = {
+      bookings: {
+        label: "Bookings",
+      },
+    };
+    chartData.forEach((item, index) => {
+      config[item.lot] = {
+        label: item.lot,
+        color: COLORS[index % COLORS.length],
+      }
+    });
+    return config;
+  }, [chartData]);
+
+  if (bookings.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground">
+        <p>No booking data available.</p>
+      </div>
+    );
+  }
+
   return (
     <ChartContainer
       config={chartConfig}
