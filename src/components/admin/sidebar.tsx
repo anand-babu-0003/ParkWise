@@ -2,7 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ParkingSquare, LayoutDashboard, BrainCircuit, Users, BarChart3, LogOut } from 'lucide-react';
+import { 
+  ParkingSquare, 
+  LayoutDashboard, 
+  BrainCircuit, 
+  Users, 
+  MapPin, 
+  BookMarked, 
+  BarChart3, 
+  LogOut 
+} from 'lucide-react';
 import {
   Sidebar,
   SidebarHeader,
@@ -20,61 +29,69 @@ export function AdminSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader>
-        <Link href="/" className="flex items-center gap-2.5">
-          <ParkingSquare className="w-7 h-7 text-primary" />
-          <span className="font-bold text-lg text-sidebar-foreground group-data-[collapsible=icon]:hidden">ParkWise</span>
+      <SidebarHeader className="p-2">
+        <Link href="/admin/dashboard" className="flex items-center gap-1.5">
+          <ParkingSquare className="w-5 h-5 text-primary" />
+          <span className="font-bold text-sidebar-foreground group-data-[collapsible=icon]:hidden text-xs">SmartParkr</span>
         </Link>
       </SidebarHeader>
-      <SidebarContent className="p-2 flex-1">
+      <SidebarContent className="p-1.5 flex-1">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={pathname === '/admin/dashboard'} tooltip="Dashboard">
+            <SidebarMenuButton asChild isActive={pathname === '/admin/dashboard'} tooltip="Dashboard" size="sm">
               <Link href="/admin/dashboard">
-                <LayoutDashboard />
-                <span>Dashboard</span>
+                <LayoutDashboard className="h-3.5 w-3.5" />
+                <span className="text-xs">Dashboard</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/predict')} tooltip="Demand Prediction">
+            <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/predict')} tooltip="Demand Prediction" size="sm">
                <Link href="/admin/predict">
-                <BrainCircuit />
-                <span>Prediction</span>
+                <BrainCircuit className="h-3.5 w-3.5" />
+                <span className="text-xs">Prediction</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
 
-        <SidebarGroup className="mt-4">
-          <SidebarGroupLabel>Management</SidebarGroupLabel>
+        <SidebarGroup className="mt-3">
+          <SidebarGroupLabel className="text-[10px]">Management</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/lots')} tooltip="Parking Lots">
-                <Link href="#">
-                  <BarChart3 />
-                  <span>Lots & Bookings</span>
+              <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/lots')} tooltip="Parking Lots" size="sm">
+                <Link href="/admin/lots">
+                  <MapPin className="h-3.5 w-3.5" />
+                  <span className="text-xs">Parking Lots</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/users')} tooltip="Users">
-                <Link href="#">
-                  <Users />
-                  <span>Users</span>
+              <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/bookings')} tooltip="Bookings" size="sm">
+                <Link href="/admin/bookings">
+                  <BookMarked className="h-3.5 w-3.5" />
+                  <span className="text-xs">Bookings</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/users')} tooltip="Users" size="sm">
+                <Link href="/admin/users">
+                  <Users className="h-3.5 w-3.5" />
+                  <span className="text-xs">Users</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="p-2">
+      <SidebarFooter className="p-1.5">
          <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Logout">
+              <SidebarMenuButton asChild tooltip="Logout" size="sm">
                 <Link href="/">
-                    <LogOut />
-                    <span>Logout</span>
+                    <LogOut className="h-3.5 w-3.5" />
+                    <span className="text-xs">Logout</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

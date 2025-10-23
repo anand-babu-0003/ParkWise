@@ -1,7 +1,6 @@
 "use client"
 
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts"
-
+import { Pie, PieChart } from "recharts"
 import {
   ChartConfig,
   ChartContainer,
@@ -10,66 +9,69 @@ import {
 } from "@/components/ui/chart"
 
 interface OccupancyChartProps {
-    data: { name: string; occupancy: number }[];
+  data: { name: string; occupancy: number }[];
 }
 
 const chartConfig = {
   occupancy: {
     label: "Occupancy",
-    color: "hsl(var(--accent))",
+  },
+  cityCenter: {
+    label: "City Center",
+    color: "hsl(var(--chart-1))",
+  },
+  mall: {
+    label: "Mall",
+    color: "hsl(var(--chart-2))",
+  },
+  airport: {
+    label: "Airport",
+    color: "hsl(var(--chart-3))",
+  },
+  stadium: {
+    label: "Stadium",
+    color: "hsl(var(--chart-4))",
   },
 } satisfies ChartConfig
 
 export function OccupancyChart({ data }: OccupancyChartProps) {
   if (!data || data.length === 0) {
-     return (
-      <div className="flex flex-col items-center justify-center h-[350px] text-muted-foreground">
+    return (
+      <div className="flex flex-col items-center justify-center h-[200px] text-muted-foreground">
         <p>No occupancy data available.</p>
       </div>
     );
   }
-  
+
+  // Transform data for pie chart
+  const chartData = data.map((item, index) => {
+    // Generate a color based on index
+    const hue = (index * 137.508) % 360; // Golden angle approximation
+    return {
+      name: item.name,
+      occupancy: item.occupancy,
+      fill: `hsl(${hue}, 70%, 50%)`,
+    };
+  });
+
   return (
-     <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-        <ResponsiveContainer width="100%" height={350}>
-            <BarChart
-            accessibilityLayer
-            data={data}
-            margin={{
-                left: 0,
-                right: 20,
-                top: 20,
-                bottom: 5,
-            }}
-            >
-            <CartesianGrid vertical={false} />
-            <XAxis
-                dataKey="name"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-                stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
-            />
-             <YAxis
-                stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(value) => `${value}%`}
-            />
-            <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent indicator="dot" />}
-            />
-            <Bar
-                dataKey="occupancy"
-                fill="var(--color-occupancy)"
-                radius={4}
-                unit="%"
-            />
-            </BarChart>
-        </ResponsiveContainer>
-      </ChartContainer>
+    <ChartContainer
+      config={chartConfig}
+      className="mx-auto aspect-square max-h-[250px]"
+    >
+      <PieChart>
+        <ChartTooltip
+          cursor={false}
+          content={<ChartTooltipContent hideLabel />}
+        />
+        <Pie
+          data={chartData}
+          dataKey="occupancy"
+          nameKey="name"
+          innerRadius={60}
+          strokeWidth={5}
+        />
+      </PieChart>
+    </ChartContainer>
   )
 }

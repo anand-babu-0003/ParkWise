@@ -1,216 +1,193 @@
 'use client';
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { predictParkingDemand, PredictParkingDemandOutput } from '@/ai/flows/parking-demand-prediction';
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BrainCircuit, Bot, Zap, Loader2, BarChart } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Label } from '@/components/ui/label';
+import { 
+  BrainCircuit, 
+  Calendar, 
+  MapPin,
+  TrendingUp
+} from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
-const formSchema = z.object({
-  parkingLotId: z.string().min(1, 'Parking Lot ID is required.'),
-  timeframe: z.string().min(1, 'Timeframe is required.'),
-  historicalData: z.string().min(1, 'Historical data is required.'),
-});
+export default function DemandPredictionPage() {
+  const [selectedLot, setSelectedLot] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
+  
+  // Mock parking lot data
+  const parkingLots = [
+    { id: '1', name: 'City Center Parking' },
+    { id: '2', name: 'Mall Parking' },
+    { id: '3', name: 'Airport Parking' },
+    { id: '4', name: 'Stadium Parking' },
+    { id: '5', name: 'Downtown Parking' },
+  ];
 
-const exampleHistoricalData = JSON.stringify(
-  [
-    { "timestamp": "2023-10-26T08:00:00Z", "occupied": 50 },
-    { "timestamp": "2023-10-26T09:00:00Z", "occupied": 65 },
-    { "timestamp": "2023-10-26T10:00:00Z", "occupied": 80 },
-    { "timestamp": "2023-10-26T11:00:00Z", "occupied": 95 },
-    { "timestamp": "2023-10-26T12:00:00Z", "occupied": 110 },
-    { "timestamp": "2023-10-26T13:00:00Z", "occupied": 105 },
-    { "timestamp": "2023-10-26T14:00:00Z", "occupied": 90 },
-  ], null, 2
-);
+  // Mock prediction data
+  const predictionData = [
+    { time: '06:00', demand: 15 },
+    { time: '07:00', demand: 45 },
+    { time: '08:00', demand: 80 },
+    { time: '09:00', demand: 65 },
+    { time: '10:00', demand: 40 },
+    { time: '11:00', demand: 30 },
+    { time: '12:00', demand: 35 },
+    { time: '13:00', demand: 45 },
+    { time: '14:00', demand: 50 },
+    { time: '15:00', demand: 60 },
+    { time: '16:00', demand: 75 },
+    { time: '17:00', demand: 90 },
+    { time: '18:00', demand: 85 },
+    { time: '19:00', demand: 70 },
+    { time: '20:00', demand: 50 },
+    { time: '21:00', demand: 30 },
+    { time: '22:00', demand: 15 },
+  ];
 
-export default function PredictDemandPage() {
-  const [prediction, setPrediction] = useState<PredictParkingDemandOutput | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      parkingLotId: 'downtown-garage-1',
-      timeframe: 'next 4 hours',
-      historicalData: exampleHistoricalData,
-    },
-  });
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsLoading(true);
-    setError(null);
-    setPrediction(null);
-    try {
-      const result = await predictParkingDemand(values);
-      setPrediction(result);
-    } catch (e) {
-      setError('Failed to generate prediction. Please try again.');
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  const handlePredict = () => {
+    console.log('Predict demand for:', { selectedLot, selectedDate });
+    // Implement prediction logic
+  };
 
   return (
-    <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-      <div className="flex items-center gap-4">
-        <BrainCircuit className="w-8 h-8 text-primary" />
-        <h1 className="text-3xl font-bold tracking-tight font-headline">Parking Demand Prediction</h1>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Demand Prediction</h1>
+        <p className="text-gray-600">Predict parking demand using AI algorithms</p>
       </div>
-      <p className="text-muted-foreground max-w-3xl">
-        Use our AI-powered tool to forecast parking demand based on historical data. This helps in optimizing slot availability and pricing.
-      </p>
 
-      <div className="grid gap-8 lg:grid-cols-2 mt-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Prediction Input</CardTitle>
-            <CardDescription>Provide the necessary information to generate a demand forecast.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="parkingLotId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Parking Lot ID</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., downtown-garage-1" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="timeframe"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Prediction Timeframe</FormLabel>
-                       <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a timeframe" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="next hour">Next Hour</SelectItem>
-                          <SelectItem value="next 4 hours">Next 4 Hours</SelectItem>
-                          <SelectItem value="next 24 hours">Next 24 Hours</SelectItem>
-                          <SelectItem value="next week">Next Week</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="historicalData"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Historical Data (JSON)</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Paste JSON data here..."
-                          className="min-h-[200px] font-mono text-xs"
-                          {...field}
-                        />
-                      </FormControl>
-                       <FormDescription>
-                        Provide a JSON array of historical occupancy data.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" disabled={isLoading} className="w-full">
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Generating Prediction...
-                    </>
-                  ) : (
-                     <>
-                      <Zap className="mr-2 h-4 w-4" />
-                      Predict Demand
-                    </>
-                  )}
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+      {/* Prediction Parameters */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BrainCircuit className="h-5 w-5" />
+            Prediction Parameters
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="parking-lot">Parking Lot</Label>
+              <Select value={selectedLot} onValueChange={setSelectedLot}>
+                <SelectTrigger id="parking-lot">
+                  <SelectValue placeholder="Select a parking lot" />
+                </SelectTrigger>
+                <SelectContent>
+                  {parkingLots.map((lot) => (
+                    <SelectItem key={lot.id} value={lot.id}>
+                      {lot.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="date">Date</Label>
+              <Input
+                id="date"
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+              />
+            </div>
+            
+            <div className="flex items-end">
+              <Button 
+                className="w-full"
+                onClick={handlePredict}
+                disabled={!selectedLot || !selectedDate}
+              >
+                <BrainCircuit className="mr-2 h-4 w-4" />
+                Predict Demand
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-        <div className="space-y-8">
-            {isLoading && (
-                 <Card className="flex flex-col items-center justify-center h-full min-h-[400px]">
-                    <Loader2 className="w-16 h-16 animate-spin text-primary mb-4" />
-                    <p className="text-lg text-muted-foreground">Our AI is analyzing the data...</p>
-                    <p className="text-sm text-muted-foreground">This may take a moment.</p>
-                </Card>
-            )}
-
-            {error && (
-                 <Alert variant="destructive">
-                  <AlertTitle>Error</AlertTitle>
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-            )}
-
-           {prediction ? (
-            <Card className="bg-gradient-to-br from-primary/10 to-accent/10">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-2xl">
-                        <Bot className="w-7 h-7" /> AI Prediction Result
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="grid grid-cols-2 gap-4 text-center">
-                        <div className="p-4 rounded-lg bg-card/80">
-                            <p className="text-sm text-muted-foreground">Predicted Demand</p>
-                            <p className="text-4xl font-bold text-primary">{prediction.predictedDemand} <span className="text-lg font-medium text-muted-foreground">slots</span></p>
-                        </div>
-                        <div className="p-4 rounded-lg bg-card/80">
-                            <p className="text-sm text-muted-foreground">Confidence Level</p>
-                            <p className="text-4xl font-bold text-accent">{(prediction.confidenceLevel * 100).toFixed(0)}%</p>
-                        </div>
-                    </div>
-                    <div>
-                        <h3 className="font-semibold mb-2">Explanation</h3>
-                        <div className="text-sm text-muted-foreground p-4 bg-card/80 rounded-md prose-sm max-w-none">
-                            {prediction.explanation}
-                        </div>
-                    </div>
-                </CardContent>
+      {/* Prediction Results */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            Prediction Results
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-sm text-gray-500">Parking Lot</div>
+                <div className="font-medium">City Center Parking</div>
+              </CardContent>
             </Card>
-           ) : (
-                !isLoading && !error && (
-                    <Card className="flex flex-col items-center justify-center text-center h-full min-h-[400px] border-dashed">
-                        <div className="p-6 bg-muted rounded-full mb-4">
-                            <BarChart className="w-10 h-10 text-muted-foreground" />
-                        </div>
-                        <h3 className="text-xl font-semibold">Your Prediction Awaits</h3>
-                        <p className="text-muted-foreground mt-2 max-w-sm">
-                            Fill out the form on the left to generate a parking demand forecast. The results will appear here.
-                        </p>
-                    </Card>
-                )
-           )}
-        </div>
-      </div>
-    </main>
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-sm text-gray-500">Date</div>
+                <div className="font-medium">2023-05-20</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-sm text-gray-500">Peak Demand Time</div>
+                <div className="font-medium">17:00 (90%)</div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Demand Visualization */}
+          <div className="h-80">
+            <h3 className="text-lg font-medium mb-4">Hourly Demand Forecast</h3>
+            <div className="flex items-end h-64 gap-2 mt-4 border-b pb-4">
+              {predictionData.map((item, index) => (
+                <div key={index} className="flex flex-col items-center flex-1">
+                  <div className="text-xs text-gray-500 mb-1">{item.time}</div>
+                  <div 
+                    className="w-full bg-blue-500 rounded-t hover:bg-blue-600 transition-colors"
+                    style={{ height: `${item.demand}%` }}
+                  />
+                  <div className="text-xs text-gray-500 mt-1">{item.demand}%</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Insights */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Insights & Recommendations</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="font-medium mb-2">Peak Hours</h3>
+              <p className="text-sm text-gray-600">
+                The highest demand is expected between 16:00-18:00 with peak occupancy of 90%. 
+                Consider increasing staffing during these hours and implementing dynamic pricing.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-medium mb-2">Low Demand Periods</h3>
+              <p className="text-sm text-gray-600">
+                The lowest demand is expected between 06:00-08:00 and 21:00-22:00 with occupancy below 20%. 
+                This might be a good time for maintenance activities or offering promotional rates.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

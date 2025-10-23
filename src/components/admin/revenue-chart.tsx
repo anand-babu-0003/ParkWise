@@ -1,16 +1,16 @@
 "use client"
 
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { Bar, BarChart, CartesianGrid, LabelList, XAxis, YAxis } from "recharts"
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart"
 
-const chartData = [
-  { month: "January", revenue: 1860 },
-  { month: "February", revenue: 3050 },
-  { month: "March", revenue: 2370 },
-  { month: "April", revenue: 7300 },
-  { month: "May", revenue: 2090 },
-  { month: "June", revenue: 4180 },
-]
+interface RevenueChartProps {
+  data: { month: string; revenue: number }[];
+}
 
 const chartConfig = {
   revenue: {
@@ -19,29 +19,56 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-export function RevenueChart() {
+export function RevenueChart({ data }: RevenueChartProps) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[350px] text-muted-foreground">
+        <p>No revenue data available.</p>
+      </div>
+    );
+  }
+
   return (
-    <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-      <ResponsiveContainer width="100%" height={350}>
-        <BarChart data={chartData} margin={{ top: 20, right: 20, left: 0, bottom: 5 }}>
-          <XAxis
-            dataKey="month"
-            stroke="hsl(var(--muted-foreground))"
-            fontSize={12}
-            tickLine={false}
-            axisLine={false}
+    <ChartContainer config={chartConfig} className="min-h-[350px] w-full">
+      <BarChart
+        accessibilityLayer
+        data={data}
+        layout="vertical"
+        margin={{
+          right: 16,
+          left: 70,
+        }}
+      >
+        <CartesianGrid horizontal={false} />
+        <YAxis
+          dataKey="month"
+          type="category"
+          tickLine={false}
+          tickMargin={10}
+          axisLine={false}
+          tickFormatter={(value: string) => value.slice(0, 3)}
+          hide={data.length > 12} // Hide Y axis labels if too many
+        />
+        <XAxis dataKey="revenue" type="number" hide />
+        <ChartTooltip
+          cursor={false}
+          content={<ChartTooltipContent indicator="line" />}
+        />
+        <Bar
+          dataKey="revenue"
+          layout="vertical"
+          fill="var(--color-revenue)"
+          radius={4}
+        >
+          <LabelList
+            dataKey="revenue"
+            position="right"
+            offset={8}
+            className="fill-foreground"
+            formatter={(value: number) => `₹${value.toLocaleString()}`}
           />
-          <YAxis
-            stroke="hsl(var(--muted-foreground))"
-            fontSize={12}
-            tickLine={false}
-            axisLine={false}
-            tickFormatter={(value) => `$${value}`}
-          />
-          <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-          <Bar dataKey="revenue" fill="var(--color-revenue)" radius={4} />
-        </BarChart>
-      </ResponsiveContainer>
+        </Bar>
+      </BarChart>
     </ChartContainer>
   )
 }

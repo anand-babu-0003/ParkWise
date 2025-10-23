@@ -80,5 +80,42 @@
   }
   body {
     @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-smooth: always;
+  }
+  
+  /* Mobile-first optimizations */
+  @media (max-width: 768px) {
+    .container {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+    
+    h1 {
+      font-size: 1.75rem;
+      line-height: 1.2;
+    }
+    
+    h2 {
+      font-size: 1.5rem;
+      line-height: 1.2;
+    }
+    
+    /* Ensure touch targets are large enough */
+    button, a, input, select {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+  
+  /* Optimize for mobile touch */
+  button, a {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Prevent zoom on input focus */
+  input, textarea, select {
+    font-size: 16px;
   }
 }
