@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">SmartParker</string>
-    <string name="title_activity_main">SmartParker</string>
-    <string name="package_name">com.smartparker.app</string>
-    <string name="custom_url_scheme">com.smartparker.app</string>
+    <string name="app_name">SmartParkr</string>
+    <string name="title_activity_main">SmartParkr</string>
+    <string name="package_name">com.smartparkr.app</string>
+    <string name="custom_url_scheme">com.smartparkr.app</string>
 </resources>

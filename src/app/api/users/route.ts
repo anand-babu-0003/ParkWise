@@ -61,12 +61,12 @@ export async function POST(request: NextRequest) {
 }
 
 // PUT /api/users/:id - Update a user
-export async function PUT(request: NextRequest) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await connectToDatabase();
     
-    const url = new URL(request.url);
-    const id = url.searchParams.get('id');
+    // Extract ID from params
+    const { id } = await params;
     
     if (!id) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
@@ -108,12 +108,12 @@ export async function PUT(request: NextRequest) {
 }
 
 // DELETE /api/users/:id - Delete a user
-export async function DELETE(request: NextRequest) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await connectToDatabase();
     
-    const url = new URL(request.url);
-    const id = url.searchParams.get('id');
+    // Extract ID from params
+    const { id } = await params;
     
     if (!id) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });

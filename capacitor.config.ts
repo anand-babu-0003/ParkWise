@@ -7,7 +7,11 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https',
     // For production, point to your deployed domain
-    url: 'https://smartparker.space'
+    url: 'https://smartparker.space',
+    cleartext: false
+  },
+  android: {
+    allowMixedContent: false
   }
 };
 

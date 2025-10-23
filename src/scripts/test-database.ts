@@ -1,33 +1,38 @@
-/**
- * Test script to verify database connectivity
- */
+import mongoose from 'mongoose';
+import AppConfig from '../lib/config';
 
-import { connectToDatabase } from '@/lib/db';
-import User from '@/models/User';
+async function testDatabaseConnection() {
+  console.log('Testing MongoDB connection...');
+  console.log('Using URI:', AppConfig.MONGO_URI?.substring(0, 50) + '...'); // Show first 50 chars for security
 
-async function testDatabase() {
-  console.log('Testing Database Connectivity...\n');
-  
   try {
-    // Test database connection
-    console.log('Connecting to database...');
-    const connection = await connectToDatabase();
-    console.log('✓ Database connected successfully');
-    console.log('- Connection ready state:', connection.connection.readyState);
-    console.log('');
+    await mongoose.connect(AppConfig.MONGO_URI!, {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    });
+    console.log('✅ Successfully connected to MongoDB');
     
-    // Test simple query
-    console.log('Testing simple query...');
-    const userCount = await User.countDocuments();
-    console.log('✓ Query executed successfully');
-    console.log('- Total users in database:', userCount);
-    console.log('');
+    // Try a simple operation
+    const collections = await mongoose.connection.db?.listCollections().toArray();
+    if (collections) {
+      console.log('Available collections:', collections.map(c => c.name));
+    }
     
-    console.log('Database tests completed successfully!');
+    await mongoose.connection.close();
+    console.log('Disconnected from MongoDB');
+  } catch (error: any) {
+    console.error('❌ Database connection failed:', error.message);
     
-  } catch (error) {
-    console.error('Error testing database:', error);
+    if (error.message.includes('MongoServerSelectionError')) {
+      console.error('\n🔧 Troubleshooting steps:');
+      console.error('1. Check if your MongoDB Atlas cluster is running');
+      console.error('2. Verify your IP address is whitelisted in MongoDB Atlas Network Access');
+      console.error('3. Check your MongoDB credentials in the connection string');
+      console.error('4. Ensure you have internet connectivity');
+    }
+    
+    process.exit(1);
   }
 }
 
-testDatabase();
+testDatabaseConnection();

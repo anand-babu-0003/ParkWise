@@ -17,7 +17,10 @@
     "capacitor:ios": "npx cap add ios",
     "capacitor:open:android": "npx cap open android",
     "capacitor:open:ios": "npx cap open ios",
-    "config:update": "node scripts/update-config.js"
+    "config:update": "node scripts/update-config.js",
+    "test:db": "tsx src/scripts/test-database.ts",
+    "test:production": "tsx src/scripts/test-production-setup.ts",
+    "test:owner-crud": "tsx src/scripts/test-owner-crud.ts"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.4",

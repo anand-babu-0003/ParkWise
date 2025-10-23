@@ -127,6 +127,8 @@ export default function MobileOwnerDashboard() {
           imageId: '',
           operatingHours: '',
         });
+      } else {
+        console.error('Failed to add lot:', response.status, await response.text());
       }
     } catch (error) {
       console.error('Error adding lot:', error);
@@ -150,6 +152,8 @@ export default function MobileOwnerDashboard() {
       
       if (response.ok) {
         setLots(lots.filter(lot => lot.id !== lotId));
+      } else {
+        console.error('Failed to delete lot:', response.status, await response.text());
       }
     } catch (error) {
       console.error('Error deleting lot:', error);
@@ -208,6 +212,8 @@ export default function MobileOwnerDashboard() {
         setLots(lots.map(lot => lot.id === data.id ? data : lot));
         setShowEditForm({show: false, lot: null});
         setEditLot(null);
+      } else {
+        console.error('Failed to update lot:', response.status, await response.text());
       }
     } catch (error) {
       console.error('Error updating lot:', error);
@@ -378,7 +384,7 @@ export default function MobileOwnerDashboard() {
                     <Input
                       id="totalSlots"
                       type="number"
-                      value={newLot.totalSlots}
+                      value={newLot.totalSlots || ''}
                       onChange={(e) => setNewLot({...newLot, totalSlots: parseInt(e.target.value) || 0})}
                     />
                   </div>
@@ -387,7 +393,7 @@ export default function MobileOwnerDashboard() {
                     <Input
                       id="availableSlots"
                       type="number"
-                      value={newLot.availableSlots}
+                      value={newLot.availableSlots || ''}
                       onChange={(e) => setNewLot({...newLot, availableSlots: parseInt(e.target.value) || 0})}
                     />
                   </div>
@@ -398,7 +404,7 @@ export default function MobileOwnerDashboard() {
                     id="pricePerHour"
                     type="number"
                     step="0.01"
-                    value={newLot.pricePerHour}
+                    value={newLot.pricePerHour || ''}
                     onChange={(e) => setNewLot({...newLot, pricePerHour: parseFloat(e.target.value) || 0})}
                   />
                 </div>
@@ -439,7 +445,7 @@ export default function MobileOwnerDashboard() {
                   <Input
                     id="edit-name"
                     value={editLot.name}
-                    onChange={(e) => setEditLot({...editLot, name: e.target.value})}
+                    onChange={(e) => setEditLot(editLot ? {...editLot, name: e.target.value} : null)}
                     placeholder="Downtown Parking"
                   />
                 </div>
@@ -448,7 +454,7 @@ export default function MobileOwnerDashboard() {
                   <Input
                     id="edit-location"
                     value={editLot.location}
-                    onChange={(e) => setEditLot({...editLot, location: e.target.value})}
+                    onChange={(e) => setEditLot(editLot ? {...editLot, location: e.target.value} : null)}
                     placeholder="123 Main St"
                   />
                 </div>
@@ -458,8 +464,8 @@ export default function MobileOwnerDashboard() {
                     <Input
                       id="edit-totalSlots"
                       type="number"
-                      value={editLot.totalSlots}
-                      onChange={(e) => setEditLot({...editLot, totalSlots: parseInt(e.target.value) || 0})}
+                      value={editLot.totalSlots || ''}
+                      onChange={(e) => setEditLot(editLot ? {...editLot, totalSlots: parseInt(e.target.value) || 0} : null)}
                     />
                   </div>
                   <div>
@@ -467,8 +473,8 @@ export default function MobileOwnerDashboard() {
                     <Input
                       id="edit-availableSlots"
                       type="number"
-                      value={editLot.availableSlots}
-                      onChange={(e) => setEditLot({...editLot, availableSlots: parseInt(e.target.value) || 0})}
+                      value={editLot.availableSlots || ''}
+                      onChange={(e) => setEditLot(editLot ? {...editLot, availableSlots: parseInt(e.target.value) || 0} : null)}
                     />
                   </div>
                 </div>
@@ -478,8 +484,8 @@ export default function MobileOwnerDashboard() {
                     id="edit-pricePerHour"
                     type="number"
                     step="0.01"
-                    value={editLot.pricePerHour}
-                    onChange={(e) => setEditLot({...editLot, pricePerHour: parseFloat(e.target.value) || 0})}
+                    value={editLot.pricePerHour || ''}
+                    onChange={(e) => setEditLot(editLot ? {...editLot, pricePerHour: parseFloat(e.target.value) || 0} : null)}
                   />
                 </div>
                 <div>
@@ -487,7 +493,7 @@ export default function MobileOwnerDashboard() {
                   <Input
                     id="edit-operatingHours"
                     value={editLot.operatingHours}
-                    onChange={(e) => setEditLot({...editLot, operatingHours: e.target.value})}
+                    onChange={(e) => setEditLot(editLot ? {...editLot, operatingHours: e.target.value} : null)}
                     placeholder="24/7"
                   />
                 </div>

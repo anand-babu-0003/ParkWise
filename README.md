@@ -53,13 +53,14 @@ SmartParkr is a modern parking management application that helps users find, boo
 3. Set the following environment variables in Vercel:
    - `MONGO_URI`: Your MongoDB Atlas connection string
    - `JWT_SECRET`: Your JWT secret key
+   - `NEXT_PUBLIC_BASE_URL`: Set to `https://smartparker.space`
 4. Deploy the application
 
 ### Mobile App Deployment
 
 1. Build the application:
    ```bash
-   npm run build
+   npm run export
    ```
 
 2. Sync with Capacitor:
@@ -78,7 +79,7 @@ SmartParkr is a modern parking management application that helps users find, boo
 
 - `MONGO_URI`: MongoDB Atlas connection string
 - `JWT_SECRET`: Secret key for JWT token generation
-- `NEXT_PUBLIC_BASE_URL`: Base URL for the application (optional)
+- `NEXT_PUBLIC_BASE_URL`: Base URL for the application (set to `https://smartparker.space`)
 
 ## API Endpoints
 
@@ -88,6 +89,42 @@ SmartParkr is a modern parking management application that helps users find, boo
 - `/api/parking-lots/*`: Parking lot management endpoints
 - `/api/bookings/*`: Booking management endpoints
 - `/api/payments/*`: Payment processing endpoints
+
+## Documentation
+
+Additional documentation can be found in the [docs](src/docs) directory:
+
+- [API Endpoints](src/docs/api-endpoints.md) - Complete API documentation
+- [Capacitor Setup](src/docs/capacitor-setup.md) - Mobile app configuration guide
+- [MongoDB Setup](src/docs/mongodb-setup.md) - Database configuration and troubleshooting
+- [Deployment Troubleshooting](src/docs/deployment-troubleshooting.md) - Solutions for common deployment issues
+
+## Troubleshooting
+
+### Common Issues
+
+1. **MongoDB Connection Errors**: 
+   - Ensure your IP is whitelisted in MongoDB Atlas
+   - Verify your connection string is correct
+   - Test with `npm run test:db`
+
+2. **API Route 500 Errors**:
+   - Check Vercel logs for detailed error messages
+   - Verify all environment variables are set
+
+3. **Mobile App Connection Issues**:
+   - Ensure `capacitor.config.ts` has the correct production URL
+   - Check network security configuration for Android
+
+### Testing Commands
+
+```bash
+# Test database connection
+npm run test:db
+
+# Test production setup
+npm run test:production
+```
 
 ## Contributing
 

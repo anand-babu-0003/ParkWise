@@ -76,7 +76,7 @@ export default function UsersPage() {
       name: user.name,
       email: user.email,
       role: user.role,
-      status: user.status,
+      status: user.status || 'Active',
       joinDate: user.joinDate,
       createdAt: user.createdAt
     };
@@ -412,6 +412,18 @@ export default function UsersPage() {
                 <SelectContent>
                   <SelectItem value="user">User</SelectItem>
                   <SelectItem value="owner">Owner</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="add-status">Status</Label>
+              <Select value={newUser.status} onValueChange={(value) => setNewUser({...newUser, status: value})}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Active">Active</SelectItem>
+                  <SelectItem value="Inactive">Inactive</SelectItem>
                 </SelectContent>
               </Select>
             </div>

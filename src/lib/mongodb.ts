@@ -31,6 +31,7 @@ export function useCollection<T>(
   const fetchData = async () => {
     try {
       setIsLoading(true);
+      setError(null);
       const response = await fetch(url);
       
       if (!response.ok) {
@@ -39,7 +40,6 @@ export function useCollection<T>(
       
       const result = await response.json();
       setData(result);
-      setError(null);
     } catch (err) {
       setError(err as Error);
       setData(null);
@@ -72,6 +72,7 @@ export function useDoc<T>(
 
     try {
       setIsLoading(true);
+      setError(null);
       const response = await fetch(url);
       
       if (!response.ok) {
@@ -80,7 +81,6 @@ export function useDoc<T>(
       
       const result = await response.json();
       setData(result);
-      setError(null);
     } catch (err) {
       setError(err as Error);
       setData(null);
@@ -108,7 +108,8 @@ export async function addDoc<T>(url: string, data: T): Promise<WithId<T> | null>
     });
     
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
     }
     
     const result = await response.json();
@@ -134,7 +135,8 @@ export async function updateDoc<T>(
     });
     
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
     }
     
     const result = await response.json();
@@ -153,7 +155,8 @@ export async function deleteDoc(url: string): Promise<boolean> {
     });
     
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
     }
     
     return true;
