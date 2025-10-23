@@ -6,19 +6,18 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ParkingSquare, Loader2 } from 'lucide-react';
+import { ParkingSquare, Loader2, ShieldCheck } from 'lucide-react';
 import placeholderImages from '@/lib/placeholder-images.json';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { useAuth, useFirestore, setDocumentNonBlocking } from '@/firebase';
-import { createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-
 
 const formSchema = z.object({
   fullName: z.string().min(1, 'Full name is required.'),
@@ -26,14 +25,13 @@ const formSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters long.'),
 });
 
-export default function RegisterPage() {
+export default function SetupPage() {
     const bgImage = placeholderImages.placeholderImages.find(img => img.id === 'login-background');
     const auth = useAuth();
     const firestore = useFirestore();
     const router = useRouter();
     const { toast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
-    const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -59,16 +57,16 @@ export default function RegisterPage() {
                 id: userCredential.user.uid,
                 name: values.fullName,
                 email: values.email,
-                role: 'user', // Set role to user
+                role: 'admin', // Set role to admin
                 createdAt: new Date().toISOString(),
               };
                setDocumentNonBlocking(userRef, userData, { merge: true });
             }
 
-            toast({ title: "Account Created", description: "Welcome to ParkWise!" });
+            toast({ title: "Admin Account Created", description: "Welcome to ParkWise!" });
             router.push('/admin/dashboard');
         } catch (error: any) {
-            console.error("Registration Error:", error);
+            console.error("Admin Registration Error:", error);
             toast({
                 variant: "destructive",
                 title: "Registration Failed",
@@ -78,38 +76,6 @@ export default function RegisterPage() {
             setIsLoading(false);
         }
     };
-    
-    const handleGoogleLogin = async () => {
-        setIsGoogleLoading(true);
-        const provider = new GoogleAuthProvider();
-        try {
-          const result = await signInWithPopup(auth, provider);
-           if (firestore) {
-              const userRef = doc(firestore, 'users', result.user.uid);
-              const userData = {
-                id: result.user.uid,
-                name: result.user.displayName,
-                email: result.user.email,
-                role: 'user',
-                createdAt: new Date().toISOString(),
-              };
-               setDocumentNonBlocking(userRef, userData, { merge: true });
-            }
-
-          toast({ title: "Sign Up Successful", description: "Welcome!" });
-          router.push('/admin/dashboard');
-        } catch (error: any) {
-          console.error("Google Sign Up Error:", error);
-          toast({
-            variant: "destructive",
-            title: "Google Sign Up Failed",
-            description: error.message || "Could not sign up with Google. Please try again.",
-          });
-        } finally {
-          setIsGoogleLoading(false);
-        }
-    }
-
 
   return (
     <div className="w-full h-screen lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px]">
@@ -120,9 +86,12 @@ export default function RegisterPage() {
               <ParkingSquare className="h-8 w-8 text-primary" />
               <span className="text-2xl font-bold text-foreground">ParkWise</span>
             </Link>
-            <h1 className="text-3xl font-bold">Sign Up</h1>
+            <h1 className="text-3xl font-bold flex items-center justify-center gap-2">
+                <ShieldCheck className="w-8 h-8 text-accent" />
+                Admin Setup
+            </h1>
             <p className="text-balance text-muted-foreground">
-              Create an account to start booking parking spots.
+              Create the first administrator account for ParkWise.
             </p>
           </div>
           <Form {...form}>
@@ -134,7 +103,7 @@ export default function RegisterPage() {
                 <FormItem className="grid gap-2">
                   <Label htmlFor="full-name">Full Name</Label>
                   <FormControl>
-                    <Input id="full-name" placeholder="Max Robinson" {...field} />
+                    <Input id="full-name" placeholder="Admin User" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -150,7 +119,7 @@ export default function RegisterPage() {
                     <Input
                       id="email"
                       type="email"
-                      placeholder="m@example.com"
+                      placeholder="admin@example.com"
                       {...field}
                     />
                   </FormControl>
@@ -171,16 +140,12 @@ export default function RegisterPage() {
                     </FormItem>
                 )}
             />
-            <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create an account
+              Create Admin Account
             </Button>
             </form>
           </Form>
-           <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={isLoading || isGoogleLoading}>
-              {isGoogleLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Sign up with Google
-            </Button>
           <div className="mt-4 text-center text-sm">
             Already have an account?{' '}
             <Link href="/login" className="underline">
