@@ -1,3 +1,4 @@
+
 import { Header } from '@/components/header';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -72,32 +73,32 @@ export default function Home() {
                 const img = getImage(lot.imageId);
                 return (
                   <Card key={lot.id} className="flex flex-col overflow-hidden transform hover:-translate-y-1 transition-transform duration-300 shadow-lg hover:shadow-xl">
-                    <div className="relative h-48 w-full">
-                       {img && <Image src={img.imageUrl} alt={img.description} fill className="object-cover" data-ai-hint={img.imageHint} />}
-                    </div>
-                    <CardHeader>
-                      <CardTitle className="text-xl">{lot.name}</CardTitle>
-                      <CardDescription className="flex items-center gap-2 pt-1">
-                        <MapPin className="w-4 h-4" />
-                        {lot.location}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex-grow">
-                      <div className="flex justify-between items-center text-sm">
-                        <Badge variant={lot.available_slots > 10 ? 'secondary' : 'destructive'}>
-                          {lot.available_slots > 0 ? `${lot.available_slots} slots available` : 'Full'}
-                        </Badge>
-                        <p className="font-semibold text-lg text-foreground">${lot.price_per_hour.toFixed(2)}<span className="text-xs font-normal text-muted-foreground">/hr</span></p>
+                    <Link href={`/lot/${lot.id}`} className="flex flex-col h-full">
+                      <div className="relative h-48 w-full">
+                        {img && <Image src={img.imageUrl} alt={img.description} fill className="object-cover" data-ai-hint={img.imageHint} />}
                       </div>
-                    </CardContent>
-                    <CardFooter>
-                      <Button className="w-full" disabled={lot.available_slots === 0} asChild>
-                        <Link href="#">
+                      <CardHeader>
+                        <CardTitle className="text-xl">{lot.name}</CardTitle>
+                        <CardDescription className="flex items-center gap-2 pt-1">
+                          <MapPin className="w-4 h-4" />
+                          {lot.location}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="flex-grow">
+                        <div className="flex justify-between items-center text-sm">
+                          <Badge variant={lot.available_slots > 10 ? 'secondary' : 'destructive'}>
+                            {lot.available_slots > 0 ? `${lot.available_slots} slots available` : 'Full'}
+                          </Badge>
+                          <p className="font-semibold text-lg text-foreground">${lot.price_per_hour.toFixed(2)}<span className="text-xs font-normal text-muted-foreground">/hr</span></p>
+                        </div>
+                      </CardContent>
+                      <CardFooter>
+                        <Button className="w-full" disabled={lot.available_slots === 0}>
                             <Zap className="w-4 h-4 mr-2" />
                             Book Now
-                        </Link>
-                      </Button>
-                    </CardFooter>
+                        </Button>
+                      </CardFooter>
+                    </Link>
                   </Card>
                 );
               })}

@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { ParkingSquare } from 'lucide-react';
 import placeholderImages from '@/lib/placeholder-images.json';
 
-export default function LoginPage() {
+export default function ForgotPasswordPage() {
   const bgImage = placeholderImages.placeholderImages.find(img => img.id === 'login-background');
   
   return (
@@ -19,9 +19,9 @@ export default function LoginPage() {
               <ParkingSquare className="h-8 w-8 text-primary" />
               <span className="text-2xl font-bold text-foreground">ParkWise</span>
             </Link>
-            <h1 className="text-3xl font-bold">Login</h1>
+            <h1 className="text-3xl font-bold">Forgot Password</h1>
             <p className="text-balance text-muted-foreground">
-              Enter your email below to login to your account
+              Enter your email and we'll send you a link to reset your password.
             </p>
           </div>
           <div className="grid gap-4">
@@ -34,29 +34,14 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
-                <Link
-                  href="/forgot-password"
-                  className="ml-auto inline-block text-sm underline"
-                >
-                  Forgot your password?
-                </Link>
-              </div>
-              <Input id="password" type="password" required />
-            </div>
             <Button type="submit" className="w-full">
-              Login
-            </Button>
-            <Button variant="outline" className="w-full">
-              Login with Google
+              Send Reset Link
             </Button>
           </div>
           <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{' '}
-            <Link href="/register" className="underline">
-              Sign up
+            Remember your password?{' '}
+            <Link href="/login" className="underline">
+              Login
             </Link>
           </div>
         </div>

@@ -27,8 +27,14 @@
     {
       "id": "login-background",
       "description": "Abstract view of a spiral ramp in a parking garage.",
-      "imageUrl": "https://images.unsplash.com/photo-1691260841178-d6ec4231f1d4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwYXJraW5nJTIwcmFtcHxlbnwwfHx8fDE3NjEyMjAwMTZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1691260841178-d6ec4231f1d4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwYXJraW5nJTIwcmFtcHxlbnwwfHx8fDE3NjEyMjAwMTZ8MA&ixlib=rb-4-1.0&q=80&w=1080",
       "imageHint": "parking ramp"
+    },
+    {
+      "id": "user-profile-avatar",
+      "description": "A person smiling, suitable for a user profile picture.",
+      "imageUrl": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1160&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "person smiling"
     }
   ]
 }
