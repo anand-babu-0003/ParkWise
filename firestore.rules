@@ -1,0 +1,121 @@
+/**
+ * @fileoverview Firestore Security Rules for Smart Parking System.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for user profiles and bookings,
+ * with administrative control over parking lots and slots.  Payments are managed server-side.
+ *
+ * Data Structure:
+ * - /users/{userId}: User profile data, accessible only by the user themselves.
+ * - /parking_lots/{parkingLotId}: Parking lot data, managed by admins.
+ * - /parking_lots/{parkingLotId}/slots/{slotId}: Parking slot data within a parking lot, managed by admins.
+ * - /bookings/{bookingId}: Booking data, accessible to the user who created the booking.
+ * - /payments/{paymentId}: Payment data, managed server-side.
+ *
+ * Key Security Decisions:
+ * - Users can only read/write their own user profile.
+ * - Parking lots and slots can only be created, updated, or deleted by admins (enforced externally).
+ * - Users can only read their own bookings; booking creation is open for prototyping.
+ * - Payments are managed server-side; clients have no direct access.
+ * - No user listing is allowed.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Manages user profile data. Only the authenticated user can access their own profile.
+     * @path /users/{userId}
+     * @allow (create) User with ID matching auth UID can create their profile.
+     * @allow (get, list, update, delete) Authenticated user can read/write their own profile.
+     * @deny (create, update, delete) User cannot modify another user's profile.
+     * @principle Enforces document ownership for writes.
+     */
+    match /users/{userId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      function isExistingOwner(userId) {
+        return isOwner(userId) && exists(resource);
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isExistingOwner(userId); // Removed id check, as rapid prototyping needs flexible schemas.
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Manages parking lot data. Only admins can create, update, or delete parking lots.
+     * @path /parking_lots/{parkingLotId}
+     * @allow (get, list) Anyone can read parking lot data.
+     * @deny (create, update, delete) Only admins can modify parking lots (enforced externally).
+     * @principle Restricts writes to a specific role (admin).
+     */
+    match /parking_lots/{parkingLotId} {
+      allow get, list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false; // TODO: Add admin role check once implemented
+    }
+
+    /**
+     * @description Manages parking slot data within a parking lot. Only admins can modify slots.
+     * @path /parking_lots/{parkingLotId}/slots/{slotId}
+     * @allow (get, list) Anyone can read parking slot data.
+     * @deny (create, update, delete) Only admins can modify slots (enforced externally).
+     * @principle Restricts writes to a specific role (admin).
+     */
+    match /parking_lots/{parkingLotId}/slots/{slotId} {
+      allow get, list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false; // TODO: Add admin role check once implemented
+    }
+
+    /**
+     * @description Manages booking data. Users can only read their own bookings.
+     * @path /bookings/{bookingId}
+     * @allow (create) Authenticated user can create bookings
+     * @allow (get) Authenticated user can read their own bookings.
+     * @allow (list) Listing is not allowed
+     * @deny (update, delete) Bookings can only be updated or deleted by admins (enforced externally).
+     * @principle Enforces document ownership for reads.
+     */
+    match /bookings/{bookingId} {
+       function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(bookingId) {
+        return request.auth.uid == resource.data.userId;
+      }
+
+      allow get: if isSignedIn() && isOwner(bookingId);
+      allow list: if false;
+      allow create: if isSignedIn();
+      allow update: if false;
+      allow delete: if false; // TODO: Add admin role check once implemented
+    }
+
+    /**
+     * @description Manages payment data. Payments are created and managed by Cloud Functions, not directly by users.
+     * @path /payments/{paymentId}
+     * @deny (get, list, create, update, delete) Clients have no direct access to payment data.
+     * @principle Server-only data; clients have no access.
+     */
+    match /payments/{paymentId} {
+      allow get: if false;
+      allow list: if false;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}

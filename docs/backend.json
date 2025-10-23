@@ -1,0 +1,343 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the Smart Parking System.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user. (From Firebase Auth)",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string",
+          "description": "The user's display name."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        },
+        "role": {
+          "type": "string",
+          "description": "The user's role (user or admin)."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "email",
+        "role",
+        "createdAt"
+      ]
+    },
+    "ParkingLot": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ParkingLot",
+      "type": "object",
+      "description": "Represents a parking lot location.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the parking lot.",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the parking lot."
+        },
+        "location": {
+          "type": "string",
+          "description": "The address or textual location of the parking lot."
+        },
+        "latitude": {
+          "type": "number",
+          "description": "Latitude coordinate of the parking lot location."
+        },
+        "longitude": {
+          "type": "number",
+          "description": "Longitude coordinate of the parking lot location."
+        },
+        "totalSlots": {
+          "type": "number",
+          "description": "The total number of parking slots in the lot."
+        },
+        "availableSlots": {
+          "type": "number",
+          "description": "The number of currently available parking slots."
+        },
+        "pricePerHour": {
+          "type": "number",
+          "description": "The price per hour for parking in this lot."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the parking lot was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "location",
+        "latitude",
+        "longitude",
+        "totalSlots",
+        "availableSlots",
+        "pricePerHour",
+        "createdAt"
+      ]
+    },
+    "Slot": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Slot",
+      "type": "object",
+      "description": "Represents a specific parking slot within a parking lot.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the parking slot.",
+          "format": "uuid"
+        },
+        "lotId": {
+          "type": "string",
+          "description": "Reference to ParkingLot. (Relationship: ParkingLot 1:N Slot)"
+        },
+        "slotNumber": {
+          "type": "string",
+          "description": "The number or identifier of the slot within the lot."
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the slot (available, occupied, reserved)."
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the slot status was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "lotId",
+        "slotNumber",
+        "status",
+        "updatedAt"
+      ]
+    },
+    "Booking": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Booking",
+      "type": "object",
+      "description": "Represents a parking booking made by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the booking.",
+          "format": "uuid"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Booking)"
+        },
+        "lotId": {
+          "type": "string",
+          "description": "Reference to ParkingLot. (Relationship: ParkingLot 1:N Booking)"
+        },
+        "slotId": {
+          "type": "string",
+          "description": "Reference to Slot. (Relationship: Slot 1:N Booking)"
+        },
+        "startTime": {
+          "type": "string",
+          "description": "Timestamp indicating the start time of the booking.",
+          "format": "date-time"
+        },
+        "endTime": {
+          "type": "string",
+          "description": "Timestamp indicating the end time of the booking.",
+          "format": "date-time"
+        },
+        "paymentStatus": {
+          "type": "string",
+          "description": "The payment status of the booking (pending, paid)."
+        },
+        "qrCodeUrl": {
+          "type": "string",
+          "description": "URL of the QR code image stored in Firebase Storage.",
+          "format": "uri"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the booking was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "lotId",
+        "slotId",
+        "startTime",
+        "endTime",
+        "paymentStatus",
+        "qrCodeUrl",
+        "createdAt"
+      ]
+    },
+    "Payment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Payment",
+      "type": "object",
+      "description": "Represents a payment transaction for a booking.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the payment transaction.",
+          "format": "uuid"
+        },
+        "bookingId": {
+          "type": "string",
+          "description": "Reference to Booking. (Relationship: Booking 1:1 Payment)"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Payment)"
+        },
+        "amount": {
+          "type": "number",
+          "description": "The amount paid in the transaction."
+        },
+        "method": {
+          "type": "string",
+          "description": "The payment method used (Razorpay or Stripe)."
+        },
+        "status": {
+          "type": "string",
+          "description": "The status of the payment (success, failed, pending)."
+        },
+        "transactionId": {
+          "type": "string",
+          "description": "The transaction ID from the payment gateway."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp indicating when the payment was processed.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "bookingId",
+        "userId",
+        "amount",
+        "method",
+        "status",
+        "transactionId",
+        "timestamp"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user data.  The 'userId' is the Firebase Auth UID. Only the authenticated user (or an admin via a backend process) can write to their own document.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase Auth UID of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/parking_lots/{parkingLotId}",
+        "definition": {
+          "entityName": "ParkingLot",
+          "schema": {
+            "$ref": "#/backend/entities/ParkingLot"
+          },
+          "description": "Stores parking lot data. Only admin users (managed through a separate mechanism, not custom claims) can create, update, or delete parking lots.",
+          "params": [
+            {
+              "name": "parkingLotId",
+              "description": "The unique ID of the parking lot."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/parking_lots/{parkingLotId}/slots/{slotId}",
+        "definition": {
+          "entityName": "Slot",
+          "schema": {
+            "$ref": "#/backend/entities/Slot"
+          },
+          "description": "Stores parking slot data within a specific parking lot.  Only admin users can modify slots. Includes denormalized lotId.",
+          "params": [
+            {
+              "name": "parkingLotId",
+              "description": "The unique ID of the parking lot."
+            },
+            {
+              "name": "slotId",
+              "description": "The unique ID of the parking slot."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/bookings/{bookingId}",
+        "definition": {
+          "entityName": "Booking",
+          "schema": {
+            "$ref": "#/backend/entities/Booking"
+          },
+          "description": "Stores booking data. Each booking is associated with a user, parking lot, and slot. Users can only read their own bookings.  Admins can read all bookings via backend process.",
+          "params": [
+            {
+              "name": "bookingId",
+              "description": "The unique ID of the booking."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/payments/{paymentId}",
+        "definition": {
+          "entityName": "Payment",
+          "schema": {
+            "$ref": "#/backend/entities/Payment"
+          },
+          "description": "Stores payment data.  Payments are created and managed by Cloud Functions, not directly by users.",
+          "params": [
+            {
+              "name": "paymentId",
+              "description": "The unique ID of the payment."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to ensure security, scalability, and ease of debugging, adhering to the principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). Authorization Independence is achieved by avoiding `get()` calls in security rules, relying instead on denormalized data where necessary.  The use of path-based ownership (`/users/{userId}/...`) for private user data and the segregation of data with different access requirements into separate collections significantly simplifies security rules and ensures QAPs. The membership map pattern is not directly used in this design, as the existing structure provides sufficient clarity and control for the defined use cases."
+  }
+}
