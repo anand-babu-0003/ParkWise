@@ -20,7 +20,10 @@
     "config:update": "node scripts/update-config.js",
     "test:db": "tsx src/scripts/test-database.ts",
     "test:production": "tsx src/scripts/test-production-setup.ts",
-    "test:owner-crud": "tsx src/scripts/test-owner-crud.ts"
+    "test:owner-crud": "tsx src/scripts/test-owner-crud.ts",
+    "test:owner-lots-api": "tsx src/scripts/test-owner-lots-api.ts",
+    "test:geolocation": "tsx src/scripts/test-geolocation.ts",
+    "test:payment-auth": "tsx src/scripts/test-payment-auth.ts"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.4",

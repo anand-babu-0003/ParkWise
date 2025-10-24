@@ -29,6 +29,7 @@ This document explains the owner functionality in the SmartParkr application, in
 - Required fields:
   - Lot Name
   - Location
+  - Location Coordinates (latitude and longitude)
   - Total Slots
   - Available Slots
   - Price per Hour
@@ -51,6 +52,11 @@ This document explains the owner functionality in the SmartParkr application, in
 - Owners can delete their parking lots
 - Confirmation is required before deletion
 
+### Live Location Integration
+- Owners can use their device's current location when adding or editing parking lots
+- A "Use Current Location" button automatically populates the latitude and longitude fields
+- This feature uses the browser's Geolocation API for accurate positioning
+
 ### QR Code Generation
 - Owners can generate QR codes for each parking lot
 - QR codes can be downloaded and printed for physical display
@@ -70,6 +76,28 @@ This document explains the owner functionality in the SmartParkr application, in
 - `PUT /api/owner/lots/{id}` - Update a specific parking lot
 - `DELETE /api/owner/lots/{id}` - Delete a specific parking lot
 
+## Data Format
+
+### Parking Lot Data Structure
+Parking lots require specific data fields including geospatial coordinates:
+
+```json
+{
+  "name": "Downtown Parking",
+  "location": "123 Main St, City",
+  "locationCoords": {
+    "type": "Point",
+    "coordinates": [-73.9857, 40.7484] // [longitude, latitude]
+  },
+  "availableSlots": 10,
+  "totalSlots": 20,
+  "pricePerHour": 5.50,
+  "imageId": "lot-image-123",
+  "operatingHours": "24/7",
+  "ownerId": "owner-id-123"
+}
+```
+
 ## Testing Owner Functionality
 
 ### Automated Testing
@@ -78,7 +106,12 @@ Run the owner CRUD test script:
 npm run test:owner-crud
 ```
 
-This script will:
+Run the owner lots API test script:
+```bash
+npm run test:owner-lots-api
+```
+
+These scripts will:
 1. Create a test owner user
 2. Create a test owner profile
 3. Create a test parking lot
@@ -98,12 +131,14 @@ This script will:
 1. Add a new parking lot:
    - Click "Add Lot" button
    - Fill in lot details
+   - Click "Use Current Location" to automatically populate coordinates
    - Submit the form
    - Verify the lot appears in the list
 
 2. Edit a parking lot:
    - Click the edit icon for a lot
    - Modify lot details
+   - Click "Use Current Location" to update coordinates
    - Save changes
    - Verify the changes are reflected
 
@@ -130,6 +165,14 @@ This script will:
 ### 3. "Geospatial validation failed" Error
 - **Cause**: Missing or incorrect location coordinates when creating a lot
 - **Solution**: Ensure locationCoords field has the proper structure with type and coordinates
+
+### 4. "Geolocation not supported" Error
+- **Cause**: Browser or device doesn't support Geolocation API
+- **Solution**: Manually enter latitude and longitude coordinates
+
+### 5. "User denied Geolocation" Error
+- **Cause**: User rejected the location permission request
+- **Solution**: Manually enter latitude and longitude coordinates or try again and accept the permission
 
 ## Security Considerations
 

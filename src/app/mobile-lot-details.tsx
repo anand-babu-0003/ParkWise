@@ -11,6 +11,8 @@ import Link from 'next/link';
 import { useDoc } from '@/lib/mongodb';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
 
 type ParkingLot = {
   id: string;
@@ -25,6 +27,8 @@ type ParkingLot = {
 };
 
 export default function MobileLotDetails({ lotId }: { lotId: string }) {
+  const { user, isUserLoading } = useAuth();
+  const router = useRouter();
   const { data: parkingLot, isLoading, error } = useDoc<ParkingLot>(`/api/parking-lots/${lotId}`);
   const [bookingDate, setBookingDate] = useState('');
   const [bookingTime, setBookingTime] = useState('');
@@ -60,6 +64,26 @@ export default function MobileLotDetails({ lotId }: { lotId: string }) {
   const currentParkingLot = refreshedParkingLot || parkingLot;
   const img = currentParkingLot ? placeholderImages.placeholderImages.find(img => img.id === currentParkingLot.imageId) : null;
   const totalCost = currentParkingLot ? currentParkingLot.pricePerHour * duration : 0;
+
+  // Check if user is authenticated, if not redirect to login
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push(`/login?redirect=/lot/${lotId}`);
+    }
+  }, [user, isUserLoading, router, lotId]);
+
+  if (isUserLoading) {
+    return (
+      <div className="flex flex-col min-h-screen p-4 items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <p className="mt-4">Checking authentication...</p>
+      </div>
+    );
+  }
+
+  if (!user && !isUserLoading) {
+    return null; // Will redirect to login
+  }
 
   if (isLoading && !currentParkingLot) {
     return (
@@ -249,30 +273,42 @@ export default function MobileLotDetails({ lotId }: { lotId: string }) {
           disabled={currentParkingLot.availableSlots === 0}
           onClick={async () => {
             // Create booking when button is clicked
-            if (currentParkingLot.availableSlots > 0) {
+            if (currentParkingLot.availableSlots > 0 && user) {
               try {
-                const response = await fetch('/api/bookings', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    userId: 'current-user-id', // This would need to be replaced with actual user ID
-                    lotId: currentParkingLot.id,
-                    lotName: currentParkingLot.name,
-                    date: bookingDate,
-                    time: bookingTime,
-                    status: 'Confirmed',
-                    price: totalCost,
-                  }),
-                });
+                // Process dummy payment before creating booking
+                const paymentSuccess = await processDummyPayment(totalCost);
                 
-                if (response.ok) {
-                  // Refresh the data to show updated slot count
-                  handleRefresh();
+                if (paymentSuccess) {
+                  const response = await fetch('/api/bookings', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      userId: user.id, // Use actual user ID from auth context
+                      lotId: currentParkingLot.id,
+                      lotName: currentParkingLot.name,
+                      date: bookingDate,
+                      time: bookingTime,
+                      status: 'Confirmed',
+                      price: totalCost,
+                    }),
+                  });
+                  
+                  if (response.ok) {
+                    // Refresh the data to show updated slot count
+                    handleRefresh();
+                    alert('Booking confirmed successfully!');
+                  } else {
+                    const errorData = await response.json();
+                    alert(`Booking failed: ${errorData.error}`);
+                  }
+                } else {
+                  alert('Payment failed. Please try again.');
                 }
               } catch (error) {
                 console.error('Booking error:', error);
+                alert('An error occurred while processing your booking.');
               }
             }
           }}
@@ -283,4 +319,13 @@ export default function MobileLotDetails({ lotId }: { lotId: string }) {
       </div>
     </div>
   );
+}
+
+// Dummy payment processing function
+async function processDummyPayment(amount: number): Promise<boolean> {
+  // Simulate payment processing delay
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  
+  // Randomly succeed or fail (90% success rate for demo purposes)
+  return Math.random() > 0.1;
 }

@@ -26,6 +26,10 @@ type ParkingLot = {
   id: string;
   name: string;
   location: string;
+  locationCoords?: {
+    type: 'Point';
+    coordinates: [number, number]; // [longitude, latitude]
+  };
   availableSlots: number;
   totalSlots: number;
   pricePerHour: number;
@@ -45,11 +49,15 @@ export default function MobileOwnerDashboard() {
   const [newLot, setNewLot] = useState({
     name: '',
     location: '',
+    locationCoords: {
+      type: 'Point' as const,
+      coordinates: [0, 0] // [longitude, latitude]
+    },
     availableSlots: 0,
     totalSlots: 0,
     pricePerHour: 0,
-    imageId: '',
-    operatingHours: '',
+    imageId: 'default-lot-image', // Provide a default image ID
+    operatingHours: '24/7', // Provide default operating hours
   });
   const [editLot, setEditLot] = useState<ParkingLot | null>(null);
 
@@ -102,6 +110,12 @@ export default function MobileOwnerDashboard() {
     if (!user || isOwnerRegistered !== true) return;
     
     try {
+      // Validate required fields
+      if (!newLot.name || !newLot.location) {
+        console.error('Name and location are required');
+        return;
+      }
+      
       const response = await fetch('/api/owner/lots', {
         method: 'POST',
         headers: {
@@ -121,14 +135,19 @@ export default function MobileOwnerDashboard() {
         setNewLot({
           name: '',
           location: '',
+          locationCoords: {
+            type: 'Point',
+            coordinates: [0, 0]
+          },
           availableSlots: 0,
           totalSlots: 0,
           pricePerHour: 0,
-          imageId: '',
-          operatingHours: '',
+          imageId: 'default-lot-image',
+          operatingHours: '24/7',
         });
       } else {
-        console.error('Failed to add lot:', response.status, await response.text());
+        const errorText = await response.text();
+        console.error('Failed to add lot:', response.status, errorText);
       }
     } catch (error) {
       console.error('Error adding lot:', error);
@@ -186,15 +205,74 @@ export default function MobileOwnerDashboard() {
     }
   };
 
+  // Function to get current device location
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      console.error('Geolocation is not supported by this browser.');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setNewLot({
+          ...newLot,
+          locationCoords: {
+            type: 'Point' as const,
+            coordinates: [longitude, latitude] // [longitude, latitude]
+          }
+        });
+        console.log('Location updated:', latitude, longitude);
+      },
+      (error) => {
+        console.error('Error getting location:', error.message);
+        // Handle different error cases
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            console.error('User denied the request for Geolocation.');
+            break;
+          case error.POSITION_UNAVAILABLE:
+            console.error('Location information is unavailable.');
+            break;
+          case error.TIMEOUT:
+            console.error('The request to get user location timed out.');
+            break;
+          default:
+            console.error('An unknown error occurred.');
+            break;
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000
+      }
+    );
+  };
+
   const handleEditLot = (lot: ParkingLot) => {
-    setEditLot(lot);
-    setShowEditForm({show: true, lot});
+    // Ensure locationCoords is properly initialized
+    const lotWithCoords = {
+      ...lot,
+      locationCoords: lot.locationCoords || {
+        type: 'Point',
+        coordinates: [0, 0]
+      }
+    };
+    setEditLot(lotWithCoords);
+    setShowEditForm({show: true, lot: lotWithCoords});
   };
 
   const handleUpdateLot = async () => {
     if (!user || isOwnerRegistered !== true || !editLot) return;
     
     try {
+      // Validate required fields
+      if (!editLot.name || !editLot.location) {
+        console.error('Name and location are required');
+        return;
+      }
+      
       const response = await fetch(`/api/owner/lots/${editLot.id}`, {
         method: 'PUT',
         headers: {
@@ -213,7 +291,8 @@ export default function MobileOwnerDashboard() {
         setShowEditForm({show: false, lot: null});
         setEditLot(null);
       } else {
-        console.error('Failed to update lot:', response.status, await response.text());
+        const errorText = await response.text();
+        console.error('Failed to update lot:', response.status, errorText);
       }
     } catch (error) {
       console.error('Error updating lot:', error);
@@ -380,6 +459,48 @@ export default function MobileOwnerDashboard() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
+                    <Label htmlFor="latitude">Latitude</Label>
+                    <Input
+                      id="latitude"
+                      type="number"
+                      step="any"
+                      value={newLot.locationCoords.coordinates[1] || ''}
+                      onChange={(e) => setNewLot({
+                        ...newLot, 
+                        locationCoords: {
+                          ...newLot.locationCoords,
+                          coordinates: [newLot.locationCoords.coordinates[0], parseFloat(e.target.value) || 0]
+                        }
+                      })}
+                      placeholder="40.7128"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="longitude">Longitude</Label>
+                    <Input
+                      id="longitude"
+                      type="number"
+                      step="any"
+                      value={newLot.locationCoords.coordinates[0] || ''}
+                      onChange={(e) => setNewLot({
+                        ...newLot, 
+                        locationCoords: {
+                          ...newLot.locationCoords,
+                          coordinates: [parseFloat(e.target.value) || 0, newLot.locationCoords.coordinates[1]]
+                        }
+                      })}
+                      placeholder="-74.0060"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end">
+                  <Button type="button" variant="outline" size="sm" onClick={getCurrentLocation}>
+                    <MapPin className="mr-2 h-4 w-4" />
+                    Use Current Location
+                  </Button>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
                     <Label htmlFor="totalSlots">Total Slots</Label>
                     <Input
                       id="totalSlots"
@@ -457,6 +578,86 @@ export default function MobileOwnerDashboard() {
                     onChange={(e) => setEditLot(editLot ? {...editLot, location: e.target.value} : null)}
                     placeholder="123 Main St"
                   />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="edit-latitude">Latitude</Label>
+                    <Input
+                      id="edit-latitude"
+                      type="number"
+                      step="any"
+                      value={editLot.locationCoords?.coordinates?.[1] ?? ''}
+                      onChange={(e) => setEditLot(editLot ? {
+                        ...editLot, 
+                        locationCoords: {
+                          type: 'Point',
+                          coordinates: [
+                            editLot.locationCoords?.coordinates?.[0] ?? 0, 
+                            parseFloat(e.target.value) || 0
+                          ]
+                        }
+                      } : null)}
+                      placeholder="40.7128"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-longitude">Longitude</Label>
+                    <Input
+                      id="edit-longitude"
+                      type="number"
+                      step="any"
+                      value={editLot.locationCoords?.coordinates?.[0] ?? ''}
+                      onChange={(e) => setEditLot(editLot ? {
+                        ...editLot, 
+                        locationCoords: {
+                          type: 'Point',
+                          coordinates: [
+                            parseFloat(e.target.value) || 0, 
+                            editLot.locationCoords?.coordinates?.[1] ?? 0
+                          ]
+                        }
+                      } : null)}
+                      placeholder="-74.0060"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => {
+                      if (!navigator.geolocation) {
+                        console.error('Geolocation is not supported by this browser.');
+                        return;
+                      }
+
+                      navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                          const { latitude, longitude } = position.coords;
+                          setEditLot(editLot ? {
+                            ...editLot,
+                            locationCoords: {
+                              type: 'Point',
+                              coordinates: [longitude, latitude]
+                            }
+                          } : null);
+                          console.log('Location updated:', latitude, longitude);
+                        },
+                        (error) => {
+                          console.error('Error getting location:', error.message);
+                        },
+                        {
+                          enableHighAccuracy: true,
+                          timeout: 10000,
+                          maximumAge: 60000
+                        }
+                      );
+                    }}
+                  >
+                    <MapPin className="mr-2 h-4 w-4" />
+                    Use Current Location
+                  </Button>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>

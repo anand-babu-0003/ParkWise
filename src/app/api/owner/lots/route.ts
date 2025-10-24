@@ -71,9 +71,14 @@ export async function POST(req: NextRequest) {
       );
     }
     
-    // If location coordinates are provided, format them correctly
+    // If location coordinates are provided in the new format, use them
+    // Otherwise, if latitude and longitude are provided, convert them
     const parkingLotData = { ...lotData, ownerId };
-    if (lotData.latitude && lotData.longitude) {
+    if (lotData.locationCoords) {
+      // locationCoords is already in the correct format
+      parkingLotData.locationCoords = lotData.locationCoords;
+    } else if (lotData.latitude && lotData.longitude) {
+      // Convert latitude/longitude to locationCoords format
       parkingLotData.locationCoords = {
         type: 'Point',
         coordinates: [parseFloat(lotData.longitude), parseFloat(lotData.latitude)]
