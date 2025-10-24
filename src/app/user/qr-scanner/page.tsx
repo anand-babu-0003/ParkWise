@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { Camera, QrCode, X, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Webcam from 'react-webcam';
+import { PermissionService } from '@/lib/permissions';
 
 export default function QRScannerPage() {
   const { user } = useAuth();
@@ -18,6 +19,7 @@ export default function QRScannerPage() {
   const [scanning, setScanning] = useState(true);
   const [scannedUrl, setScannedUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
 
   // Redirect if user is not logged in
   useEffect(() => {
@@ -26,10 +28,28 @@ export default function QRScannerPage() {
     }
   }, [user, router]);
 
+  // Check camera permissions on mount
+  useEffect(() => {
+    const checkCameraPermission = async () => {
+      const hasPermission = await PermissionService.requestCameraPermissions();
+      setHasCameraPermission(hasPermission);
+      
+      if (!hasPermission) {
+        toast({
+          title: "Camera Permission Required",
+          description: "Please allow camera access to scan QR codes.",
+          variant: "destructive",
+        });
+      }
+    };
+    
+    checkCameraPermission();
+  }, []);
+
   const capture = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (scanning) {
+    if (scanning && hasCameraPermission) {
       capture.current = setInterval(() => {
         detectQRCode();
       }, 500);
@@ -40,7 +60,7 @@ export default function QRScannerPage() {
         clearInterval(capture.current);
       }
     };
-  }, [scanning]);
+  }, [scanning, hasCameraPermission]);
 
   const detectQRCode = () => {
     if (webcamRef.current) {
@@ -159,6 +179,49 @@ export default function QRScannerPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (hasCameraPermission === false) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <header className="bg-card/80 backdrop-blur-sm border-b sticky top-0 z-40">
+          <div className="flex h-16 items-center justify-between px-4">
+            <h1 className="text-xl font-bold text-foreground">Scan QR Code</h1>
+            <Button variant="ghost" size="icon" onClick={() => router.back()}>
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+        </header>
+        
+        <main className="flex-1 p-4 overflow-y-auto">
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <QrCode className="h-5 w-5" />
+                Camera Permission Required
+              </CardTitle>
+              <CardDescription>
+                Camera access is needed to scan QR codes
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <div className="bg-red-100 p-3 rounded-full mb-4">
+                  <Camera className="h-8 w-8 text-red-600" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Camera Access Denied</h3>
+                <p className="text-muted-foreground mb-4">
+                  Please enable camera permissions in your device settings to scan QR codes.
+                </p>
+                <Button onClick={resetScanner}>
+                  Try Again
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </main>
       </div>
     );
   }

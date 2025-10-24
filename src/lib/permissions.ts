@@ -1,4 +1,5 @@
-import { Geolocation } from '@capacitor/geolocation';
+import { Geolocation, Position } from '@capacitor/geolocation';
+import { Camera } from '@capacitor/camera';
 
 export class PermissionService {
   /**
@@ -28,7 +29,7 @@ export class PermissionService {
    * Get current position if permissions are granted
    * @returns Promise resolving to position coordinates or null
    */
-  static async getCurrentPosition(): Promise<GeolocationPosition | null> {
+  static async getCurrentPosition(): Promise<Position | null> {
     try {
       const hasPermission = await this.requestLocationPermissions();
       
@@ -54,7 +55,7 @@ export class PermissionService {
    * @param callback Function to call when position changes
    * @returns Promise resolving to watcher ID
    */
-  static async watchPosition(callback: (position: GeolocationPosition | null) => void): Promise<string | null> {
+  static async watchPosition(callback: (position: Position | null) => void): Promise<string | null> {
     try {
       const hasPermission = await this.requestLocationPermissions();
       
@@ -88,5 +89,42 @@ export class PermissionService {
    */
   static clearWatch(id: string): void {
     Geolocation.clearWatch({ id });
+  }
+
+  /**
+   * Request camera permissions from the user
+   * @returns Promise resolving to true if permissions granted, false otherwise
+   */
+  static async requestCameraPermissions(): Promise<boolean> {
+    try {
+      // Check if we already have permission
+      const status = await Camera.checkPermissions();
+      
+      if (status.camera === 'granted') {
+        return true;
+      }
+      
+      // Request permission
+      const permissionStatus = await Camera.requestPermissions();
+      
+      return permissionStatus.camera === 'granted';
+    } catch (error) {
+      console.error('Error requesting camera permissions:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Check if camera is available on the device
+   * @returns Promise resolving to true if camera is available, false otherwise
+   */
+  static async isCameraAvailable(): Promise<boolean> {
+    try {
+      const result = await Camera.checkPermissions();
+      return result.camera !== 'denied';
+    } catch (error) {
+      console.error('Error checking camera availability:', error);
+      return false;
+    }
   }
 }
