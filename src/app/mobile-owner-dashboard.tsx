@@ -19,8 +19,11 @@ import {
   Calendar,
   Clock,
   QrCode,
-  Download
+  Download,
+  Navigation
 } from 'lucide-react';
+import { PermissionService } from '@/lib/permissions';
+import { useToast } from '@/hooks/use-toast';
 
 type ParkingLot = {
   id: string;
@@ -40,6 +43,7 @@ type ParkingLot = {
 
 export default function MobileOwnerDashboard() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [lots, setLots] = useState<ParkingLot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isOwnerRegistered, setIsOwnerRegistered] = useState<boolean | null>(null);
@@ -60,6 +64,7 @@ export default function MobileOwnerDashboard() {
     operatingHours: '24/7', // Provide default operating hours
   });
   const [editLot, setEditLot] = useState<ParkingLot | null>(null);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
 
   // Check if owner has completed registration
   useEffect(() => {
@@ -105,6 +110,44 @@ export default function MobileOwnerDashboard() {
 
     fetchLots();
   }, [user, isOwnerRegistered]);
+
+  // Get current location for parking lot
+  const getLocationForLot = async () => {
+    setIsGettingLocation(true);
+    
+    try {
+      const position = await PermissionService.getCurrentPosition();
+      
+      if (position) {
+        setNewLot({
+          ...newLot,
+          locationCoords: {
+            type: 'Point',
+            coordinates: [position.coords.longitude, position.coords.latitude]
+          }
+        });
+        toast({
+          title: "Location captured",
+          description: "Parking lot location has been set.",
+        });
+      } else {
+        toast({
+          title: "Location error",
+          description: "Unable to get your location. Please enter manually.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error getting location:", error);
+      toast({
+        title: "Location error",
+        description: "Unable to get your location. Please enter manually.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGettingLocation(false);
+    }
+  };
 
   const handleAddLot = async () => {
     if (!user || isOwnerRegistered !== true) return;
@@ -206,48 +249,37 @@ export default function MobileOwnerDashboard() {
   };
 
   // Function to get current device location
-  const getCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      console.error('Geolocation is not supported by this browser.');
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
+  const getCurrentLocation = async () => {
+    try {
+      const position = await PermissionService.getCurrentPosition();
+      
+      if (position) {
         setNewLot({
           ...newLot,
           locationCoords: {
             type: 'Point' as const,
-            coordinates: [longitude, latitude] // [longitude, latitude]
+            coordinates: [position.coords.longitude, position.coords.latitude] // [longitude, latitude]
           }
         });
-        console.log('Location updated:', latitude, longitude);
-      },
-      (error) => {
-        console.error('Error getting location:', error.message);
-        // Handle different error cases
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            console.error('User denied the request for Geolocation.');
-            break;
-          case error.POSITION_UNAVAILABLE:
-            console.error('Location information is unavailable.');
-            break;
-          case error.TIMEOUT:
-            console.error('The request to get user location timed out.');
-            break;
-          default:
-            console.error('An unknown error occurred.');
-            break;
-        }
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 60000
+        toast({
+          title: "Location captured",
+          description: "Parking lot location has been set.",
+        });
+      } else {
+        toast({
+          title: "Location error",
+          description: "Unable to get your location. Please enter manually.",
+          variant: "destructive",
+        });
       }
-    );
+    } catch (error) {
+      console.error('Error getting location:', error);
+      toast({
+        title: "Location error",
+        description: "Unable to get your location. Please enter manually.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleEditLot = (lot: ParkingLot) => {

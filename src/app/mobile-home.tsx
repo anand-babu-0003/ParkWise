@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { PermissionService } from '@/lib/permissions';
 
 // Define the type for a parking lot
 type ParkingLot = {
@@ -37,37 +38,62 @@ export default function MobileHome() {
   const { toast } = useToast();
 
   // Get user's current location
-  const getLocation = () => {
-    if (!navigator.geolocation) {
-      toast({
-        title: "Geolocation not supported",
-        description: "Your browser doesn't support geolocation.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const getLocation = async () => {
     setIsGettingLocation(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        setUserLocation({ lat: latitude, lng: longitude });
-        setIsGettingLocation(false);
+    
+    try {
+      // Try to get location using Capacitor Geolocation first (for mobile)
+      const position = await PermissionService.getCurrentPosition();
+      
+      if (position) {
+        setUserLocation({ 
+          lat: position.coords.latitude, 
+          lng: position.coords.longitude 
+        });
         toast({
           title: "Location found",
           description: "Showing parking lots near you.",
         });
-      },
-      (error) => {
-        console.error("Error getting location:", error);
-        setIsGettingLocation(false);
-        toast({
-          title: "Location error",
-          description: "Unable to get your location. Showing all parking lots.",
-          variant: "destructive",
-        });
+      } else {
+        // Fallback to browser geolocation
+        if (!navigator.geolocation) {
+          toast({
+            title: "Geolocation not supported",
+            description: "Your device doesn't support geolocation.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            setUserLocation({ lat: latitude, lng: longitude });
+            toast({
+              title: "Location found",
+              description: "Showing parking lots near you.",
+            });
+          },
+          (error) => {
+            console.error("Error getting location:", error);
+            toast({
+              title: "Location error",
+              description: "Unable to get your location. Showing all parking lots.",
+              variant: "destructive",
+            });
+          }
+        );
       }
-    );
+    } catch (error) {
+      console.error("Error getting location:", error);
+      toast({
+        title: "Location error",
+        description: "Unable to get your location. Showing all parking lots.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGettingLocation(false);
+    }
   };
 
   // Fetch parking lots
